@@ -1,8 +1,8 @@
 {
   "files": {
-    "main.js": "/little-lights/static/js/main.db960601.js",
-    "index.html": "/little-lights/index.html",
-    "main.db960601.js.map": "/little-lights/static/js/main.db960601.js.map"
+    "main.js": "/static/js/main.db960601.js",
+    "index.html": "/index.html",
+    "main.db960601.js.map": "/static/js/main.db960601.js.map"
   },
   "entrypoints": [
     "static/js/main.db960601.js"
