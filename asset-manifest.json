@@ -1,10 +1,10 @@
 {
   "files": {
-    "main.js": "/little-lights/static/js/main.225137df.js",
+    "main.js": "/little-lights/static/js/main.b73ce487.js",
     "index.html": "/little-lights/index.html",
-    "main.225137df.js.map": "/little-lights/static/js/main.225137df.js.map"
+    "main.b73ce487.js.map": "/little-lights/static/js/main.b73ce487.js.map"
   },
   "entrypoints": [
-    "static/js/main.225137df.js"
+    "static/js/main.b73ce487.js"
   ]
 }
