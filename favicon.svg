@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="50" fill="#0284C7"/>
+  <circle cx="50" cy="50" r="42" fill="#FEF9C3" opacity="0.3"/>
+  <circle cx="50" cy="50" r="34" fill="#FDE68A" opacity="0.4"/>
+  <circle cx="50" cy="50" r="26" fill="#FDE68A" opacity="0.7"/>
+  <circle cx="50" cy="50" r="18" fill="#F59E0B"/>
+  <circle cx="50" cy="44" r="6.5" fill="white"/>
+  <path d="M36 66 Q50 54 64 66" fill="white"/>
+  <line x1="50" y1="4" x2="50" y2="12" stroke="#F59E0B" stroke-width="4" stroke-linecap="round"/>
+  <line x1="50" y1="88" x2="50" y2="96" stroke="#F59E0B" stroke-width="4" stroke-linecap="round"/>
+  <line x1="4" y1="50" x2="12" y2="50" stroke="#F59E0B" stroke-width="4" stroke-linecap="round"/>
+  <line x1="88" y1="50" x2="96" y2="50" stroke="#F59E0B" stroke-width="4" stroke-linecap="round"/>
+  <line x1="18" y1="18" x2="24" y2="24" stroke="#FCD34D" stroke-width="3" stroke-linecap="round"/>
+  <line x1="76" y1="76" x2="82" y2="82" stroke="#FCD34D" stroke-width="3" stroke-linecap="round"/>
+  <line x1="82" y1="18" x2="76" y2="24" stroke="#FCD34D" stroke-width="3" stroke-linecap="round"/>
+  <line x1="18" y1="82" x2="24" y2="76" stroke="#FCD34D" stroke-width="3" stroke-linecap="round"/>
+</svg>
