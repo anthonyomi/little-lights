@@ -717,61 +717,50 @@ function openInviteModal() {
     </div>`);
 }
 
+const INVITE_FUNCTION_URL = "https://inviteteacher-r64wiezuzq-uc.a.run.app";
+
 function doInvite() {
   const name = document.getElementById('inv-name').value.trim();
   const email = document.getElementById('inv-email').value.trim();
   const role = document.getElementById('inv-role').value;
-  const orgId = document.getElementById('inv-org').value; // "__current__" or an org id
+  const orgId = document.getElementById('inv-org').value;
   const msg = document.getElementById('inv-msg');
   if (!name || !email) return;
+
+  // Work out org name for the email
+  const orgName = orgId === '__current__'
+    ? 'New Covenant Church Bermondsey'
+    : (orgs.find(o => o.id === orgId)?.name || 'New Covenant Church Bermondsey');
+
   msg.innerHTML = '<div style="color:#475569;font-size:13px;margin-bottom:12px;">Sending invite…</div>';
 
-  const tempPassword = Math.random().toString(36).slice(2) + 'Aa1!';
-
-  fetch('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=' + FIREBASE_CONFIG.apiKey, {
+  fetch(INVITE_FUNCTION_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: email, password: tempPassword, returnSecureToken: true }),
+    body: JSON.stringify({ name, email, role, orgName }),
   })
   .then(r => r.json())
   .then(data => {
     if (data.error) {
-      if (data.error.message === 'EMAIL_EXISTS') {
-        // Account already exists — look up their uid via password reset flow
-        // We can't get the uid client-side, but we can check the teachers DB by email
-        return db.ref('teachers').orderByChild('email').equalTo(email).once('value')
-          .then(snap => {
-            if (snap.exists()) {
-              // Teacher record exists — just resend the invite email
-              return auth.sendPasswordResetEmail(email)
-                .then(() => {
-                  msg.innerHTML = '<div class="success-msg">This teacher already exists. Invite email resent to ' + esc(email) + '.</div>';
-                });
-            } else {
-              // Auth account exists but no DB record — use sign-in to get uid
-              // Sign in with temp flow isn't possible, so send reset and notify admin
-              return auth.sendPasswordResetEmail(email)
-                .then(() => {
-                  msg.innerHTML = '<div class="success-msg">Account already existed but had no teacher record — password reset email sent to ' + esc(email) + '. Once they set a password and sign in, they\'ll be registered automatically. Or delete their account in Firebase Console and re-invite.</div>';
-                });
-            }
-          });
-      }
-      msg.innerHTML = '<div class="error-msg">' + esc(data.error.message) + '</div>';
+      msg.innerHTML = '<div class="error-msg">' + esc(data.error) + '</div>';
       return;
     }
-    const uid = data.localId;
-    return db.ref('teachers/' + uid).set({ uid, name, email, role, orgId: orgId === '__current__' ? null : orgId })
-      .then(() => auth.sendPasswordResetEmail(email))
-      .then(() => {
-        msg.innerHTML = '<div class="success-msg">Invite sent to ' + esc(email) + '! They can sign in with email/password or Google.</div>';
-        document.getElementById('inv-name').value = '';
-        document.getElementById('inv-email').value = '';
-      });
+    // Also save orgId to the teacher record
+    if (orgId !== '__current__') {
+      db.ref('teachers').orderByChild('email').equalTo(email).once('value')
+        .then(snap => {
+          if (snap.exists()) {
+            const key = Object.keys(snap.val())[0];
+            db.ref('teachers/' + key).update({ orgId });
+          }
+        });
+    }
+    msg.innerHTML = '<div class="success-msg">Invite sent to ' + esc(email) + '! They\'ll receive a branded email from hello@littlelights.co.</div>';
+    document.getElementById('inv-name').value = '';
+    document.getElementById('inv-email').value = '';
   })
   .catch(e => { msg.innerHTML = '<div class="error-msg">' + esc(e.message) + '</div>'; });
 }
-
 // ── ORGANISATIONS ─────────────────────────────────────────────────────────────
 function renderOrgs() {
   // Keep teacher org filter in sync
