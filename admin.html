@@ -716,20 +716,33 @@ function doInvite() {
   const msg = document.getElementById('inv-msg');
   if (!name || !email) return;
   msg.innerHTML = '<div style="color:#475569;font-size:13px;margin-bottom:12px;">Sending invite…</div>';
+
   const tempPassword = Math.random().toString(36).slice(2) + 'Aa1!';
-  auth.createUserWithEmailAndPassword(email, tempPassword)
-    .then(cred => {
-      const uid = cred.user.uid;
-      return cred.user.updateProfile({ displayName: name })
-        .then(() => db.ref('teachers/' + uid).set({ uid, name, email, role }))
-        .then(() => auth.sendPasswordResetEmail(email));
-    })
-    .then(() => {
-      msg.innerHTML = '<div class="success-msg">Invite sent to ' + esc(email) + '</div>';
-      document.getElementById('inv-name').value = '';
-      document.getElementById('inv-email').value = '';
-    })
-    .catch(e => { msg.innerHTML = '<div class="error-msg">' + esc(e.message) + '</div>'; });
+
+  // Use REST API to create the account without affecting the current auth session
+  fetch('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=' + FIREBASE_CONFIG.apiKey, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: email, password: tempPassword, returnSecureToken: true }),
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.error) {
+      const errMsg = data.error.message === 'EMAIL_EXISTS' ? 'That email is already registered.' : data.error.message;
+      msg.innerHTML = '<div class="error-msg">' + esc(errMsg) + '</div>';
+      return;
+    }
+    const uid = data.localId;
+    // Save teacher record then send password reset email
+    return db.ref('teachers/' + uid).set({ uid, name, email, role })
+      .then(() => auth.sendPasswordResetEmail(email))
+      .then(() => {
+        msg.innerHTML = '<div class="success-msg">Invite sent to ' + esc(email) + '! They can sign in with email/password or Google.</div>';
+        document.getElementById('inv-name').value = '';
+        document.getElementById('inv-email').value = '';
+      });
+  })
+  .catch(e => { msg.innerHTML = '<div class="error-msg">' + esc(e.message) + '</div>'; });
 }
 
 // ── ORGANISATIONS ─────────────────────────────────────────────────────────────
