@@ -719,7 +719,6 @@ function doInvite() {
 
   const tempPassword = Math.random().toString(36).slice(2) + 'Aa1!';
 
-  // Use REST API to create the account without affecting the current auth session
   fetch('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=' + FIREBASE_CONFIG.apiKey, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -728,12 +727,31 @@ function doInvite() {
   .then(r => r.json())
   .then(data => {
     if (data.error) {
-      const errMsg = data.error.message === 'EMAIL_EXISTS' ? 'That email is already registered.' : data.error.message;
-      msg.innerHTML = '<div class="error-msg">' + esc(errMsg) + '</div>';
+      if (data.error.message === 'EMAIL_EXISTS') {
+        // Account already exists — look up their uid via password reset flow
+        // We can't get the uid client-side, but we can check the teachers DB by email
+        return db.ref('teachers').orderByChild('email').equalTo(email).once('value')
+          .then(snap => {
+            if (snap.exists()) {
+              // Teacher record exists — just resend the invite email
+              return auth.sendPasswordResetEmail(email)
+                .then(() => {
+                  msg.innerHTML = '<div class="success-msg">This teacher already exists. Invite email resent to ' + esc(email) + '.</div>';
+                });
+            } else {
+              // Auth account exists but no DB record — use sign-in to get uid
+              // Sign in with temp flow isn't possible, so send reset and notify admin
+              return auth.sendPasswordResetEmail(email)
+                .then(() => {
+                  msg.innerHTML = '<div class="success-msg">Account already existed but had no teacher record — password reset email sent to ' + esc(email) + '. Once they set a password and sign in, they\'ll be registered automatically. Or delete their account in Firebase Console and re-invite.</div>';
+                });
+            }
+          });
+      }
+      msg.innerHTML = '<div class="error-msg">' + esc(data.error.message) + '</div>';
       return;
     }
     const uid = data.localId;
-    // Save teacher record then send password reset email
     return db.ref('teachers/' + uid).set({ uid, name, email, role })
       .then(() => auth.sendPasswordResetEmail(email))
       .then(() => {
