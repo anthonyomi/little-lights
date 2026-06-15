@@ -690,11 +690,19 @@ function removeTeacher(uid, name) {
 }
 
 function openInviteModal() {
+  // Build org options — always include current org, plus any additional orgs
+  const orgOptions = ['<option value="__current__">New Covenant Church Bermondsey</option>']
+    .concat(orgs.map(o => `<option value="${esc(o.id)}">${esc(o.name)}</option>`))
+    .join('');
+
   showModal(`
     <div class="modal-header"><h3>Invite Teacher</h3><button onclick="closeModal()" style="background:none;border:none;cursor:pointer;padding:4px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.75"><path d="M6 18L18 6M6 6l12 12"/></svg></button></div>
     <div class="modal-body">
       <div class="field"><label>Full name</label><input id="inv-name" placeholder="e.g. Sarah Johnson" /></div>
       <div class="field"><label>Email address</label><input id="inv-email" type="email" placeholder="e.g. sarah@church.com" /></div>
+      <div class="field"><label>Organisation</label>
+        <select id="inv-org">${orgOptions}</select>
+      </div>
       <div class="field"><label>Role</label>
         <select id="inv-role">
           <option value="standard">Standard Teacher</option>
@@ -713,6 +721,7 @@ function doInvite() {
   const name = document.getElementById('inv-name').value.trim();
   const email = document.getElementById('inv-email').value.trim();
   const role = document.getElementById('inv-role').value;
+  const orgId = document.getElementById('inv-org').value; // "__current__" or an org id
   const msg = document.getElementById('inv-msg');
   if (!name || !email) return;
   msg.innerHTML = '<div style="color:#475569;font-size:13px;margin-bottom:12px;">Sending invite…</div>';
@@ -752,7 +761,7 @@ function doInvite() {
       return;
     }
     const uid = data.localId;
-    return db.ref('teachers/' + uid).set({ uid, name, email, role })
+    return db.ref('teachers/' + uid).set({ uid, name, email, role, orgId: orgId === '__current__' ? null : orgId })
       .then(() => auth.sendPasswordResetEmail(email))
       .then(() => {
         msg.innerHTML = '<div class="success-msg">Invite sent to ' + esc(email) + '! They can sign in with email/password or Google.</div>';
