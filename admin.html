@@ -372,10 +372,10 @@
         <div style="display:flex;align-items:center;gap:14px;padding:10px 20px;border-bottom:1px solid #F1F5F9;background:#F8FAFC;border-radius:14px 14px 0 0;">
           <div style="width:40px;flex-shrink:0;"></div>
           <div style="flex:1;font-size:11px;font-weight:600;color:#94A3B8;text-transform:uppercase;letter-spacing:.06em;">Teacher</div>
-          <div style="font-size:11px;font-weight:600;color:#94A3B8;text-transform:uppercase;letter-spacing:.06em;min-width:120px;">Organisation</div>
-          <div style="font-size:11px;font-weight:600;color:#94A3B8;text-transform:uppercase;letter-spacing:.06em;min-width:80px;">Role</div>
-          <div style="font-size:11px;font-weight:600;color:#94A3B8;text-transform:uppercase;letter-spacing:.06em;min-width:120px;">Last Login</div>
-          <div style="min-width:100px;"></div>
+          <div style="width:150px;font-size:11px;font-weight:600;color:#94A3B8;text-transform:uppercase;letter-spacing:.06em;">Organisation</div>
+          <div style="width:90px;font-size:11px;font-weight:600;color:#94A3B8;text-transform:uppercase;letter-spacing:.06em;">Role</div>
+          <div style="width:100px;font-size:11px;font-weight:600;color:#94A3B8;text-transform:uppercase;letter-spacing:.06em;">Last Login</div>
+          <div style="width:110px;font-size:11px;font-weight:600;color:#94A3B8;text-transform:uppercase;letter-spacing:.06em;">Admin</div>
           <div style="width:28px;"></div>
         </div>
         <div id="teachers-list"></div>
@@ -648,10 +648,10 @@ function renderTeachers() {
           <div style="font-weight:600;font-size:14px;">${esc(t.name)}</div>
           <div style="font-size:12px;color:#94A3B8;margin-top:2px;">${esc(t.email)}</div>
         </div>
-        <span class="badge" style="background:#E0F2FE;color:#0369A1;font-size:11px;">${esc(oName)}</span>
-        <span class="badge" style="background:${isAdmin ? '#FEF3C7' : '#F1F5F9'};color:${isAdmin ? '#92400E' : '#64748B'};">${isAdmin ? 'Admin' : 'Standard'}</span>
-        <span style="font-size:11px;color:#94A3B8;white-space:nowrap;min-width:80px;text-align:right;">${t.lastLogin ? timeAgo(t.lastLogin) : 'Never'}</span>
-        <div class="toggle-wrap" style="margin-left:8px;">
+        <span style="width:150px;flex-shrink:0;"><span class="badge" style="background:#E0F2FE;color:#0369A1;font-size:11px;">${esc(oName)}</span></span>
+        <span style="width:90px;flex-shrink:0;"><span class="badge" style="background:${isAdmin ? '#FEF3C7' : '#F1F5F9'};color:${isAdmin ? '#92400E' : '#64748B'};">${isAdmin ? 'Admin' : 'Standard'}</span></span>
+        <span style="width:100px;flex-shrink:0;font-size:12px;color:#94A3B8;">${t.lastLogin ? timeAgo(t.lastLogin) : 'Never'}</span>
+        <div class="toggle-wrap" style="width:110px;flex-shrink:0;">
           <span style="font-size:12px;color:#94A3B8;">Admin</span>
           <button class="toggle" style="background:${isAdmin ? '#0284C7' : '#E2E8F0'};" onclick="toggleRole('${t.uid}','${esc(t.name)}',${isAdmin})">
             <div class="toggle-knob" style="left:${isAdmin ? '23px' : '3px'};"></div>
