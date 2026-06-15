@@ -369,6 +369,15 @@
         </div>
       </div>
       <div class="card card-tight">
+        <div style="display:flex;align-items:center;gap:14px;padding:10px 20px;border-bottom:1px solid #F1F5F9;background:#F8FAFC;border-radius:14px 14px 0 0;">
+          <div style="width:40px;flex-shrink:0;"></div>
+          <div style="flex:1;font-size:11px;font-weight:600;color:#94A3B8;text-transform:uppercase;letter-spacing:.06em;">Teacher</div>
+          <div style="font-size:11px;font-weight:600;color:#94A3B8;text-transform:uppercase;letter-spacing:.06em;min-width:120px;">Organisation</div>
+          <div style="font-size:11px;font-weight:600;color:#94A3B8;text-transform:uppercase;letter-spacing:.06em;min-width:80px;">Role</div>
+          <div style="font-size:11px;font-weight:600;color:#94A3B8;text-transform:uppercase;letter-spacing:.06em;min-width:120px;">Last Login</div>
+          <div style="min-width:100px;"></div>
+          <div style="width:28px;"></div>
+        </div>
         <div id="teachers-list"></div>
       </div>
     </div>
@@ -428,6 +437,40 @@
             <div style="font-weight:600;" id="settings-name">—</div>
             <div style="font-size:13px;color:#94A3B8;" id="settings-email">—</div>
             <span class="badge" style="background:#FEF3C7;color:#92400E;margin-top:4px;">Super Admin</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="font-size:15px;font-weight:600;margin-bottom:16px;">Firebase Console</h3>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:10px;border:1px solid #E2E8F0;">
+            <div>
+              <div style="font-size:13px;font-weight:600;">Database Usage</div>
+              <div style="font-size:11px;color:#94A3B8;">Read/write counts, active connections</div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="window.open('https://console.firebase.google.com/project/little-lights-church/database/little-lights-church-default-rtdb/usage','_blank')">Open</button>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:10px;border:1px solid #E2E8F0;">
+            <div>
+              <div style="font-size:13px;font-weight:600;">Storage Usage</div>
+              <div style="font-size:11px;color:#94A3B8;">Files stored, bandwidth consumed</div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="window.open('https://console.firebase.google.com/project/little-lights-church/storage','_blank')">Open</button>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:10px;border:1px solid #E2E8F0;">
+            <div>
+              <div style="font-size:13px;font-weight:600;">Authentication</div>
+              <div style="font-size:11px;color:#94A3B8;">All users, sign-in methods, recent activity</div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="window.open('https://console.firebase.google.com/project/little-lights-church/authentication/users','_blank')">Open</button>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:10px;border:1px solid #E2E8F0;">
+            <div>
+              <div style="font-size:13px;font-weight:600;">Billing &amp; Costs</div>
+              <div style="font-size:11px;color:#94A3B8;">Usage costs, billing alerts, spend to date</div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="window.open('https://console.firebase.google.com/project/little-lights-church/usage','_blank')">Open</button>
           </div>
         </div>
       </div>
@@ -578,7 +621,7 @@ function renderTeachers() {
   // Build org lookup: orgId → org name (for future multi-tenancy)
   // For now all Firebase teachers belong to New Covenant
   const orgName = t => t.orgId ? (orgs.find(o => o.id === t.orgId)?.name || 'Unknown Org') : 'New Covenant Church Bermondsey';
-  const orgShort = t => t.orgId ? (orgs.find(o => o.id === t.orgId)?.name || 'Unknown') : 'New Covenant';
+  const orgShort = t => t.orgId ? (orgs.find(o => o.id === t.orgId)?.name || 'Unknown') : 'NCC Bermondsey';
 
   let filtered = teachers.filter(t =>
     (t.name || '').toLowerCase().includes(q) || (t.email || '').toLowerCase().includes(q)
@@ -607,6 +650,7 @@ function renderTeachers() {
         </div>
         <span class="badge" style="background:#E0F2FE;color:#0369A1;font-size:11px;">${esc(oName)}</span>
         <span class="badge" style="background:${isAdmin ? '#FEF3C7' : '#F1F5F9'};color:${isAdmin ? '#92400E' : '#64748B'};">${isAdmin ? 'Admin' : 'Standard'}</span>
+        <span style="font-size:11px;color:#94A3B8;white-space:nowrap;min-width:80px;text-align:right;">${t.lastLogin ? timeAgo(t.lastLogin) : 'Never'}</span>
         <div class="toggle-wrap" style="margin-left:8px;">
           <span style="font-size:12px;color:#94A3B8;">Admin</span>
           <button class="toggle" style="background:${isAdmin ? '#0284C7' : '#E2E8F0'};" onclick="toggleRole('${t.uid}','${esc(t.name)}',${isAdmin})">
@@ -804,6 +848,18 @@ function showToast(msg, isError = false) {
 // ── UTILS ─────────────────────────────────────────────────────────────────────
 function initials(name) {
   return (name || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+}
+function timeAgo(ts) {
+  if (!ts) return 'Never';
+  const diff = Date.now() - ts;
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return 'Just now';
+  if (m < 60) return m + 'm ago';
+  const h = Math.floor(m / 60);
+  if (h < 24) return h + 'h ago';
+  const d = Math.floor(h / 24);
+  if (d < 7) return d + 'd ago';
+  return new Date(ts).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 function esc(str) {
   return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
