@@ -710,7 +710,7 @@ function openInviteModal() {
         </select>
       </div>
       <div id="inv-msg"></div>
-      <div class="modal-footer">
+      <div class="modal-footer" id="inv-footer">
         <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
         <button class="btn btn-primary" onclick="doInvite()">Send Invite</button>
       </div>
@@ -758,6 +758,11 @@ function doInvite() {
     msg.innerHTML = '<div class="success-msg">Invite sent to ' + esc(email) + '! They\'ll receive a branded email from hello@littlelights.co.</div>';
     document.getElementById('inv-name').value = '';
     document.getElementById('inv-email').value = '';
+    // Swap buttons to Invite Another / Close
+    document.getElementById('inv-footer').innerHTML = `
+      <button class="btn btn-secondary" onclick="openInviteModal()">Invite Another</button>
+      <button class="btn btn-primary" onclick="closeModal()">Close</button>
+    `;
   })
   .catch(e => { msg.innerHTML = '<div class="error-msg">' + esc(e.message) + '</div>'; });
 }
