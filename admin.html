@@ -578,7 +578,7 @@ document.getElementById('login-email').addEventListener('keydown', e => { if (e.
 
 // ── DATA LISTENERS ───────────────────────────────────────────────────────────
 function startListeners() {
-  db.ref('teachers').on('value', snap => {
+  db.ref('orgs/001-ncc-bermondsey/teachers').on('value', snap => {
     teachers = snap.val() ? Object.values(snap.val()) : [];
     renderDashboard(); renderTeachers();
   });
@@ -628,7 +628,7 @@ function renderTeachers() {
   );
 
   // Apply org filter
-  if (orgFilter === '__current__') filtered = filtered.filter(t => !t.orgId);
+  if (orgFilter === '__current__') filtered = filtered.filter(t => !t.orgId || t.orgId === '001-ncc-bermondsey');
   else if (orgFilter) filtered = filtered.filter(t => t.orgId === orgFilter);
 
   const list = document.getElementById('teachers-list');
@@ -666,7 +666,7 @@ function renderTeachers() {
 
 function toggleRole(uid, name, currentlyAdmin) {
   const newRole = currentlyAdmin ? 'standard' : 'admin';
-  db.ref('teachers/' + uid).update({ role: newRole })
+  db.ref('orgs/001-ncc-bermondsey/teachers/' + uid).update({ role: newRole })
     .then(() => showToast(name + ' is now ' + (newRole === 'admin' ? 'an Admin' : 'a Standard teacher')))
     .catch(() => showToast('Failed to update role', true));
 }
@@ -684,7 +684,7 @@ function confirmRemove(uid, name) {
 }
 
 function removeTeacher(uid, name) {
-  db.ref('teachers/' + uid).remove()
+  db.ref('orgs/001-ncc-bermondsey/teachers/' + uid).remove()
     .then(() => { showToast(name + ' has been removed'); closeModal(); })
     .catch(() => showToast('Failed to remove teacher', true));
 }
