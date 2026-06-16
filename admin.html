@@ -618,10 +618,14 @@ function renderTeachers() {
   const q = (document.getElementById('teacher-search')?.value || '').toLowerCase();
   const orgFilter = document.getElementById('teacher-org-filter')?.value || '';
 
-  // Build org lookup: orgId → org name (for future multi-tenancy)
-  // For now all Firebase teachers belong to New Covenant
-  const orgName = t => t.orgId ? (orgs.find(o => o.id === t.orgId)?.name || 'Unknown Org') : 'New Covenant Church Bermondsey';
-  const orgShort = t => t.orgId ? (orgs.find(o => o.id === t.orgId)?.name || 'Unknown') : 'NCC Bermondsey';
+  const orgName = t => {
+    if (!t.orgId || t.orgId === '001-ncc-bermondsey') return 'New Covenant Church Bermondsey';
+    return orgs.find(o => o.id === t.orgId)?.name || t.orgId;
+  };
+  const orgShort = t => {
+    if (!t.orgId || t.orgId === '001-ncc-bermondsey') return 'NCC Bermondsey';
+    return orgs.find(o => o.id === t.orgId)?.name || t.orgId;
+  };
 
   let filtered = teachers.filter(t =>
     (t.name || '').toLowerCase().includes(q) || (t.email || '').toLowerCase().includes(q)
