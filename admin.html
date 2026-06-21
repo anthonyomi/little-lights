@@ -578,10 +578,34 @@ document.getElementById('login-email').addEventListener('keydown', e => { if (e.
 
 // ── DATA LISTENERS ───────────────────────────────────────────────────────────
 function startListeners() {
+  // Load NCC teachers
   db.ref('orgs/001-ncc-bermondsey/teachers').on('value', snap => {
-    teachers = snap.val() ? Object.values(snap.val()) : [];
+    const nccTeachers = snap.val() ? Object.values(snap.val()) : [];
+    // Merge with any other org teachers already loaded
+    teachers = [...nccTeachers, ...teachers.filter(t => t.orgId && t.orgId !== '001-ncc-bermondsey')];
     renderDashboard(); renderTeachers();
   });
+
+  // Load teachers from additional orgs
+  db.ref('superAdmin/orgs').once('value', snap => {
+    const orgData = snap.val();
+    if (!orgData) return;
+    Object.keys(orgData).forEach(orgId => {
+      db.ref(`orgs/${orgId}/teachers`).on('value', snap => {
+        const orgTeachers = snap.val() ? Object.values(snap.val()) : [];
+        // Replace this org's teachers in the combined list
+        teachers = [
+          ...teachers.filter(t => !t.orgId || t.orgId === '001-ncc-bermondsey'),
+          ...orgTeachers,
+          ...teachers.filter(t => t.orgId && t.orgId !== '001-ncc-bermondsey' && t.orgId !== orgId),
+        ];
+        renderDashboard(); renderTeachers();
+        // Update org filter dropdown
+        renderOrgs();
+      });
+    });
+  });
+
   db.ref('children').on('value', snap => {
     children = snap.val() ? Object.values(snap.val()) : [];
     renderDashboard();
@@ -670,7 +694,9 @@ function renderTeachers() {
 
 function toggleRole(uid, name, currentlyAdmin) {
   const newRole = currentlyAdmin ? 'standard' : 'admin';
-  db.ref('orgs/001-ncc-bermondsey/teachers/' + uid).update({ role: newRole })
+  const teacher = teachers.find(t => t.uid === uid);
+  const orgId = teacher?.orgId || '001-ncc-bermondsey';
+  db.ref(`orgs/${orgId}/teachers/${uid}`).update({ role: newRole })
     .then(() => showToast(name + ' is now ' + (newRole === 'admin' ? 'an Admin' : 'a Standard teacher')))
     .catch(() => showToast('Failed to update role', true));
 }
@@ -688,7 +714,9 @@ function confirmRemove(uid, name) {
 }
 
 function removeTeacher(uid, name) {
-  db.ref('orgs/001-ncc-bermondsey/teachers/' + uid).remove()
+  const teacher = teachers.find(t => t.uid === uid);
+  const orgId = teacher?.orgId || '001-ncc-bermondsey';
+  db.ref(`orgs/${orgId}/teachers/${uid}`).remove()
     .then(() => { showToast(name + ' has been removed'); closeModal(); })
     .catch(() => showToast('Failed to remove teacher', true));
 }
@@ -804,11 +832,17 @@ function renderOrgs() {
             ${o.location ? `<div style="font-size:12px;color:#94A3B8;">${esc(o.location)}</div>` : ''}
             ${o.contactEmail ? `<div style="font-size:12px;color:#94A3B8;">Contact: ${esc(o.contactName)} · ${esc(o.contactEmail)}</div>` : ''}
           </div>
-          <div class="toggle-wrap">
-            <button class="toggle" style="background:${active ? '#0284C7' : '#E2E8F0'};" onclick="toggleOrg('${o.id}',${active})">
-              <div class="toggle-knob" style="left:${active ? '23px' : '3px'};"></div>
+          <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
+            <button class="btn btn-secondary btn-sm" onclick="window.open('https://littlelights.co?org=${esc(o.id)}','_blank')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+              Open
             </button>
-            <span style="font-size:11px;color:#94A3B8;">${active ? 'Active' : 'Suspended'}</span>
+            <div class="toggle-wrap">
+              <button class="toggle" style="background:${active ? '#0284C7' : '#E2E8F0'};" onclick="toggleOrg('${o.id}',${active})">
+                <div class="toggle-knob" style="left:${active ? '23px' : '3px'};"></div>
+              </button>
+              <span style="font-size:11px;color:#94A3B8;">${active ? 'Active' : 'Suspended'}</span>
+            </div>
           </div>
         </div>
       </div>`;
@@ -816,8 +850,31 @@ function renderOrgs() {
 }
 
 function toggleOrg(id, currentlyActive) {
-  db.ref('superAdmin/orgs/' + id).update({ active: !currentlyActive })
-    .then(() => showToast('Organisation ' + (!currentlyActive ? 'activated' : 'suspended')))
+  if (currentlyActive) {
+    // Suspending — show confirmation first
+    const org = orgs.find(o => o.id === id);
+    showModal(`
+      <div class="modal-header"><h3>Suspend Organisation</h3><button onclick="closeModal()" style="background:none;border:none;cursor:pointer;padding:4px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.75"><path d="M6 18L18 6M6 6l12 12"/></svg></button></div>
+      <div class="modal-body">
+        <div style="background:#FEE2E2;border:1px solid #EF4444;border-radius:10px;padding:14px 16px;margin-bottom:16px;display:flex;gap:10px;align-items:flex-start;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="1.75" style="flex-shrink:0;margin-top:1px;"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          <div style="font-size:13px;color:#991B1B;line-height:1.5;">Suspending <strong>${esc(org?.name || id)}</strong> will prevent all their teachers from logging into the app. They will see an error until the org is reactivated.</div>
+        </div>
+        <p style="color:#475569;font-size:14px;margin-bottom:20px;">Are you sure you want to suspend this organisation?</p>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+          <button class="btn btn-danger" onclick="doToggleOrg('${id}', false)">Yes, Suspend</button>
+        </div>
+      </div>`);
+  } else {
+    // Reactivating — no confirmation needed
+    doToggleOrg(id, true);
+  }
+}
+
+function doToggleOrg(id, active) {
+  db.ref('superAdmin/orgs/' + id).update({ active })
+    .then(() => { showToast('Organisation ' + (active ? 'reactivated' : 'suspended')); closeModal(); })
     .catch(() => showToast('Failed to update', true));
 }
 
