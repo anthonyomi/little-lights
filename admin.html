@@ -833,7 +833,7 @@ function renderOrgs() {
             ${o.contactEmail ? `<div style="font-size:12px;color:#94A3B8;">Contact: ${esc(o.contactName)} · ${esc(o.contactEmail)}</div>` : ''}
           </div>
           <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
-            <button class="btn btn-secondary btn-sm" onclick="window.open('https://littlelights.co?org=${esc(o.id)}','_blank')">
+            <button class="btn btn-secondary btn-sm" onclick="window.open('https://littlelights.co/app?org=${esc(o.id)}&orgname=${encodeURIComponent(o.name)}','_blank')">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
               Open
             </button>
