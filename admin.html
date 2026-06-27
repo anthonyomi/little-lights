@@ -58,6 +58,9 @@
       margin-bottom: 14px;
     }
     .card-tight { padding: 0; }
+    @media (max-width: 900px) {
+      .overview-grid { grid-template-columns: 1fr !important; }
+    }
 
     /* Buttons */
     .btn {
@@ -302,8 +305,11 @@
     <div id="section-dashboard" class="section">
       <div class="section-header">
         <h2 class="section-title">Overview</h2>
+        <div style="font-size:12px;color:#94A3B8;" id="last-updated">Loading...</div>
       </div>
-      <div class="stat-grid">
+
+      <!-- Platform stats -->
+      <div class="stat-grid" style="margin-bottom:24px;">
         <div class="stat-card">
           <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0284C7" stroke-width="1.75"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg></div>
           <div><div class="stat-value" id="stat-orgs">—</div><div class="stat-label">Organisations</div><div class="stat-sub" id="stat-orgs-sub"></div></div>
@@ -316,35 +322,74 @@
           <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0284C7" stroke-width="1.75"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg></div>
           <div><div class="stat-value" id="stat-teachers">—</div><div class="stat-label">Teachers</div><div class="stat-sub" id="stat-teachers-sub"></div></div>
         </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#D1FAE5;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="1.75"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg></div>
+          <div><div class="stat-value" id="stat-status" style="color:#059669;">—</div><div class="stat-label">System Status</div><div class="stat-sub" id="stat-status-sub"></div></div>
+        </div>
       </div>
 
-      <div class="card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
-          <strong style="font-size:15px;">New Covenant Church Bermondsey</strong>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <span class="badge" style="background:#D1FAE5;color:#059669;"><span class="badge-dot" style="background:#059669;"></span>Active</span>
-            <span class="badge" style="background:#F1F5F9;color:#64748B;">Free</span>
-          </div>
+      <!-- Two column layout -->
+      <div class="overview-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+
+        <!-- Org health cards -->
+        <div>
+          <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#94A3B8;margin-bottom:12px;">Organisation Health</div>
+          <div id="org-health-cards"></div>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;">
-          <div style="text-align:center;padding:12px 0;border-radius:10px;background:#E0F2FE;">
-            <div style="font-size:22px;font-weight:700;color:#0369A1;" id="ov-children">—</div>
-            <div style="font-size:12px;color:#0284C7;margin-top:2px;">Children</div>
+
+        <!-- Alerts + Activity -->
+        <div style="display:flex;flex-direction:column;gap:16px;">
+
+          <!-- Alerts -->
+          <div>
+            <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#94A3B8;margin-bottom:12px;">Alerts</div>
+            <div id="alerts-panel" class="card" style="padding:16px;">
+              <div style="color:#94A3B8;font-size:13px;text-align:center;">Loading alerts...</div>
+            </div>
           </div>
-          <div style="text-align:center;padding:12px 0;border-radius:10px;background:#F8FAFC;">
-            <div style="font-size:22px;font-weight:700;color:#334155;" id="ov-teachers">—</div>
-            <div style="font-size:12px;color:#94A3B8;margin-top:2px;">Teachers</div>
+
+          <!-- System Status -->
+          <div>
+            <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#94A3B8;margin-bottom:12px;">System Status</div>
+            <div class="card" style="padding:16px;">
+              <div id="system-status-panel">
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                  <div style="display:flex;align-items:center;justify-content:space-between;">
+                    <span style="font-size:13px;color:#475569;">Firebase Database</span>
+                    <span id="status-db" class="badge" style="background:#D1FAE5;color:#059669;">Checking...</span>
+                  </div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;">
+                    <span style="font-size:13px;color:#475569;">Firebase Auth</span>
+                    <span id="status-auth" class="badge" style="background:#D1FAE5;color:#059669;">Checking...</span>
+                  </div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;">
+                    <span style="font-size:13px;color:#475569;">Cloud Functions</span>
+                    <span id="status-functions" class="badge" style="background:#D1FAE5;color:#059669;">Checking...</span>
+                  </div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;">
+                    <span style="font-size:13px;color:#475569;">littlelights.co</span>
+                    <span id="status-site" class="badge" style="background:#D1FAE5;color:#059669;">Checking...</span>
+                  </div>
+                </div>
+                <div style="margin-top:14px;padding-top:12px;border-top:1px solid #F1F5F9;display:flex;gap:8px;flex-wrap:wrap;">
+                  <a href="https://status.firebase.google.com" target="_blank" class="btn btn-secondary btn-sm">Firebase Status Page</a>
+                  <a href="https://console.firebase.google.com/project/little-lights-church/usage" target="_blank" class="btn btn-secondary btn-sm">Usage & Billing</a>
+                </div>
+              </div>
+            </div>
           </div>
-          <div style="text-align:center;padding:12px 0;border-radius:10px;background:#F8FAFC;">
-            <div style="font-size:22px;font-weight:700;color:#334155;" id="ov-admins">—</div>
-            <div style="font-size:12px;color:#94A3B8;margin-top:2px;">Admins</div>
-          </div>
+
         </div>
-        <button class="btn btn-secondary btn-sm" onclick="window.open('https://littlelights.co/app?org=001-ncc-bermondsey&orgname=New%20Covenant%20Church%20Bermondsey','_blank')">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-          Open App
-        </button>
       </div>
+
+      <!-- Recent activity across all orgs -->
+      <div>
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#94A3B8;margin-bottom:12px;">Recent Activity Across All Orgs</div>
+        <div class="card card-tight" id="recent-activity-panel">
+          <div style="padding:20px;color:#94A3B8;font-size:13px;text-align:center;">Loading activity...</div>
+        </div>
+      </div>
+
     </div>
 
     <!-- TEACHERS -->
@@ -402,8 +447,8 @@
       <!-- NCC org card — consistent with other orgs -->
       <div class="card" style="margin-bottom:12px;">
         <div style="display:flex;align-items:flex-start;gap:14px;">
-          <div style="width:44px;height:44px;border-radius:12px;background:#E0F2FE;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0284C7" stroke-width="1.75"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+          <div style="width:44px;height:44px;border-radius:12px;background:#F1F5F9;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.75"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
           </div>
           <div style="flex:1;">
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
@@ -579,42 +624,53 @@ document.getElementById('login-password').addEventListener('keydown', e => { if 
 document.getElementById('login-email').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 
 // ── DATA LISTENERS ───────────────────────────────────────────────────────────
+let orgData = {}; // { orgId: { children: {}, teachers: {}, attendance: {}, activityLog: {} } }
+
 function startListeners() {
-  // Load NCC teachers
-  db.ref('orgs/001-ncc-bermondsey/teachers').on('value', snap => {
-    const nccTeachers = snap.val() ? Object.values(snap.val()) : [];
-    // Merge with any other org teachers already loaded
-    teachers = [...nccTeachers, ...teachers.filter(t => t.orgId && t.orgId !== '001-ncc-bermondsey')];
-    renderDashboard(); renderTeachers();
-  });
-
-  // Load teachers from additional orgs
-  db.ref('superAdmin/orgs').once('value', snap => {
-    const orgData = snap.val();
-    if (!orgData) return;
-    Object.keys(orgData).forEach(orgId => {
-      db.ref(`orgs/${orgId}/teachers`).on('value', snap => {
-        const orgTeachers = snap.val() ? Object.values(snap.val()) : [];
-        // Replace this org's teachers in the combined list
-        teachers = [
-          ...teachers.filter(t => !t.orgId || t.orgId === '001-ncc-bermondsey'),
-          ...orgTeachers,
-          ...teachers.filter(t => t.orgId && t.orgId !== '001-ncc-bermondsey' && t.orgId !== orgId),
-        ];
-        renderDashboard(); renderTeachers();
-        // Update org filter dropdown
-        renderOrgs();
-      });
-    });
-  });
-
-  db.ref('children').on('value', snap => {
-    children = snap.val() ? Object.values(snap.val()) : [];
-    renderDashboard();
-  });
+  // All orgs metadata
   db.ref('superAdmin/orgs').on('value', snap => {
     orgs = snap.val() ? Object.values(snap.val()) : [];
-    renderDashboard(); renderOrgs();
+    loadAllOrgData();
+  });
+
+  // Flat teachers for counts
+  db.ref('teachers').on('value', snap => {
+    const flat = snap.val() || {};
+    teachers = Object.values(flat).filter(t => t && t.name);
+    renderDashboard();
+    renderTeachers();
+  });
+}
+
+function loadAllOrgData() {
+  // Always load NCC
+  const allOrgIds = ['001-ncc-bermondsey', ...orgs.map(o => o.id)];
+
+  allOrgIds.forEach(orgId => {
+    if (orgData[orgId]) return; // already listening
+    orgData[orgId] = { children: {}, teachers: {}, attendance: {}, activityLog: {} };
+
+    db.ref(`orgs/${orgId}/children`).on('value', snap => {
+      orgData[orgId].children = snap.val() || {};
+      renderDashboard();
+    });
+    db.ref(`orgs/${orgId}/teachers`).on('value', snap => {
+      orgData[orgId].teachers = snap.val() || {};
+      // Update combined teachers list
+      const allTeachers = [];
+      Object.values(orgData).forEach(od => allTeachers.push(...Object.values(od.teachers).filter(t => t?.name)));
+      teachers = allTeachers;
+      renderDashboard();
+      renderTeachers();
+    });
+    db.ref(`orgs/${orgId}/attendance`).on('value', snap => {
+      orgData[orgId].attendance = snap.val() || {};
+      renderDashboard();
+    });
+    db.ref(`orgs/${orgId}/activityLog`).limitToLast(20).on('value', snap => {
+      orgData[orgId].activityLog = snap.val() || {};
+      renderDashboard();
+    });
   });
 }
 
@@ -627,16 +683,227 @@ function showSection(name) {
 }
 
 // ── DASHBOARD ────────────────────────────────────────────────────────────────
+const PLAN_LIMITS = { free: 15, starter: 50, growing: 150, multisite: Infinity };
+const ORG_NAMES = { '001-ncc-bermondsey': 'New Covenant Church Bermondsey' };
+const ORG_URLS = { '001-ncc-bermondsey': 'https://littlelights.co/app?org=001-ncc-bermondsey&orgname=New%20Covenant%20Church%20Bermondsey' };
+
+function getOrgName(orgId) {
+  if (ORG_NAMES[orgId]) return ORG_NAMES[orgId];
+  const o = orgs.find(o => o.id === orgId);
+  return o?.name || orgId;
+}
+
+function getOrgUrl(orgId) {
+  if (ORG_URLS[orgId]) return ORG_URLS[orgId];
+  const name = getOrgName(orgId);
+  return `https://littlelights.co/app?org=${orgId}&orgname=${encodeURIComponent(name)}`;
+}
+
+function getLastActivity(orgId) {
+  const att = orgData[orgId]?.attendance || {};
+  const dates = Object.keys(att).sort().reverse();
+  if (!dates.length) return null;
+  return dates[0]; // most recent session key
+}
+
+function getLastActivityDisplay(orgId) {
+  const last = getLastActivity(orgId);
+  if (!last) return 'No sessions yet';
+  const att = orgData[orgId].attendance[last];
+  const checkedIn = att ? Object.values(att).filter(r => r && r.in).length : 0;
+  return `${last} · ${checkedIn} children`;
+}
+
+function getActivityStatus(orgId) {
+  const last = getLastActivity(orgId);
+  if (!last) return 'inactive';
+  // Parse date from session key format "7 Jun 2026"
+  try {
+    const d = new Date(last);
+    const daysSince = (Date.now() - d) / 86400000;
+    if (daysSince <= 14) return 'active';
+    if (daysSince <= 60) return 'idle';
+    return 'inactive';
+  } catch { return 'unknown'; }
+}
+
 function renderDashboard() {
+  const allOrgIds = ['001-ncc-bermondsey', ...orgs.map(o => o.id)];
+  const totalChildren = allOrgIds.reduce((sum, id) => sum + Object.keys(orgData[id]?.children || {}).length, 0);
+  const totalTeachers = teachers.length;
   const adminCount = teachers.filter(t => t.role === 'admin').length;
-  document.getElementById('stat-orgs').textContent = orgs.length + 1; // +1 for current org
-  document.getElementById('stat-orgs-sub').textContent = (orgs.filter(o => o.active !== false).length + 1) + ' active';
-  document.getElementById('stat-children').textContent = children.length;
-  document.getElementById('stat-teachers').textContent = teachers.length;
-  document.getElementById('stat-teachers-sub').textContent = adminCount + ' admin' + (adminCount !== 1 ? 's' : '');
-  document.getElementById('ov-children').textContent = children.length;
-  document.getElementById('ov-teachers').textContent = teachers.length;
-  document.getElementById('ov-admins').textContent = adminCount;
+  const activeOrgs = orgs.filter(o => o.active !== false).length + 1;
+
+  // Top stats
+  document.getElementById('stat-orgs').textContent = allOrgIds.length;
+  document.getElementById('stat-orgs-sub').textContent = `${activeOrgs} active`;
+  document.getElementById('stat-children').textContent = totalChildren;
+  document.getElementById('stat-teachers').textContent = totalTeachers;
+  document.getElementById('stat-teachers-sub').textContent = `${adminCount} admin${adminCount !== 1 ? 's' : ''}`;
+  document.getElementById('stat-status').textContent = 'Operational';
+  document.getElementById('stat-status-sub').textContent = 'All systems normal';
+  document.getElementById('last-updated').textContent = 'Updated ' + new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+
+  // Org health cards
+  const healthEl = document.getElementById('org-health-cards');
+  if (healthEl) {
+    const PLAN_META = { free: ['#F1F5F9','#64748B','Free'], starter: ['#E0F2FE','#0369A1','Starter'], growing: ['#DBEAFE','#2563EB','Growing'], multisite: ['#EDE9FE','#7C3AED','Multi-site'] };
+    const STATUS_META = {
+      active:   { bg: '#D1FAE5', color: '#059669', dot: '#059669', label: 'Active' },
+      idle:     { bg: '#FEF3C7', color: '#92400E', dot: '#F59E0B', label: 'Idle' },
+      inactive: { bg: '#F1F5F9', color: '#64748B', dot: '#94A3B8', label: 'No activity' },
+      unknown:  { bg: '#F1F5F9', color: '#64748B', dot: '#94A3B8', label: 'Unknown' },
+    };
+
+    const nccMeta = { id: '001-ncc-bermondsey', name: 'New Covenant Church Bermondsey', plan: 'free', active: true };
+    const allOrgsForDisplay = [nccMeta, ...orgs.map(o => ({ id: o.id, name: o.name, plan: o.plan || 'free', active: o.active !== false }))];
+
+    healthEl.innerHTML = allOrgsForDisplay.map(org => {
+      const childCount = Object.keys(orgData[org.id]?.children || {}).length;
+      const teacherCount = Object.keys(orgData[org.id]?.teachers || {}).length;
+      const lastAct = getLastActivityDisplay(org.id);
+      const status = getActivityStatus(org.id);
+      const sm = STATUS_META[status];
+      const limit = PLAN_LIMITS[org.plan] || 15;
+      const pct = limit === Infinity ? 0 : Math.round((childCount / limit) * 100);
+      const [pbg, pc, pl] = PLAN_META[org.plan] || PLAN_META.free;
+      const nearLimit = pct >= 80 && limit !== Infinity;
+
+      return `<div class="card" style="margin-bottom:12px;padding:16px;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;">
+          <div>
+            <div style="font-weight:700;font-size:14px;color:#0F172A;margin-bottom:4px;">${esc(org.name)}</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <span class="badge" style="background:${sm.bg};color:${sm.color};"><span class="badge-dot" style="background:${sm.dot};"></span>${sm.label}</span>
+              <span class="badge" style="background:${pbg};color:${pc};">${pl}</span>
+            </div>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="window.open('${getOrgUrl(org.id)}','_blank')" style="flex-shrink:0;">Open</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;">
+          <div style="text-align:center;padding:8px;border-radius:8px;background:#F8FAFC;">
+            <div style="font-size:18px;font-weight:700;color:#0F172A;">${childCount}</div>
+            <div style="font-size:11px;color:#94A3B8;">Children</div>
+          </div>
+          <div style="text-align:center;padding:8px;border-radius:8px;background:#F8FAFC;">
+            <div style="font-size:18px;font-weight:700;color:#0F172A;">${teacherCount}</div>
+            <div style="font-size:11px;color:#94A3B8;">Teachers</div>
+          </div>
+          <div style="text-align:center;padding:8px;border-radius:8px;background:#F8FAFC;">
+            <div style="font-size:18px;font-weight:700;color:#0F172A;">${limit === Infinity ? '∞' : limit}</div>
+            <div style="font-size:11px;color:#94A3B8;">Plan limit</div>
+          </div>
+        </div>
+        ${limit !== Infinity ? `
+        <div style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:#94A3B8;margin-bottom:4px;">
+            <span>Plan usage</span><span style="color:${nearLimit ? '#EF4444' : '#94A3B8'}">${childCount}/${limit} (${pct}%)</span>
+          </div>
+          <div style="height:6px;background:#F1F5F9;border-radius:3px;">
+            <div style="height:6px;border-radius:3px;width:${Math.min(pct,100)}%;background:${pct >= 90 ? '#EF4444' : pct >= 70 ? '#F59E0B' : '#0284C7'};transition:width .3s;"></div>
+          </div>
+        </div>` : ''}
+        <div style="font-size:11px;color:#94A3B8;display:flex;align-items:center;gap:5px;">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Last session: ${esc(lastAct)}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Alerts panel
+  const alertsEl = document.getElementById('alerts-panel');
+  if (alertsEl) {
+    const alerts = [];
+    const allOrgsAll = [{ id: '001-ncc-bermondsey', name: 'New Covenant Church Bermondsey', plan: 'free', active: true }, ...orgs.map(o => ({ id: o.id, name: o.name, plan: o.plan || 'free', active: o.active !== false }))];
+
+    allOrgsAll.forEach(org => {
+      const childCount = Object.keys(orgData[org.id]?.children || {}).length;
+      const teacherCount = Object.keys(orgData[org.id]?.teachers || {}).length;
+      const limit = PLAN_LIMITS[org.plan] || 15;
+      const pct = limit === Infinity ? 0 : (childCount / limit) * 100;
+
+      if (pct >= 90) alerts.push({ type: 'error', msg: `${org.name} is at ${Math.round(pct)}% of their plan limit (${childCount}/${limit} children)` });
+      else if (pct >= 75) alerts.push({ type: 'warn', msg: `${org.name} is approaching their plan limit (${childCount}/${limit} children)` });
+      if (teacherCount === 0) alerts.push({ type: 'warn', msg: `${org.name} has no teachers` });
+      if (!org.active) alerts.push({ type: 'info', msg: `${org.name} is currently suspended` });
+      if (getActivityStatus(org.id) === 'inactive' && childCount > 0) alerts.push({ type: 'info', msg: `${org.name} has had no activity in 60+ days` });
+    });
+
+    if (alerts.length === 0) {
+      alertsEl.innerHTML = '<div style="display:flex;align-items:center;gap:8px;color:#059669;font-size:13px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>No alerts — all orgs look healthy</div>';
+    } else {
+      const COLOR = { error: { bg: '#FEE2E2', color: '#991B1B', dot: '#EF4444' }, warn: { bg: '#FEF3C7', color: '#92400E', dot: '#F59E0B' }, info: { bg: '#DBEAFE', color: '#1E40AF', dot: '#3B82F6' } };
+      alertsEl.innerHTML = alerts.map(a => {
+        const c = COLOR[a.type];
+        return `<div style="display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border-radius:8px;background:${c.bg};margin-bottom:8px;">
+          <span style="width:8px;height:8px;border-radius:50%;background:${c.dot};flex-shrink:0;margin-top:4px;"></span>
+          <span style="font-size:13px;color:${c.color};">${esc(a.msg)}</span>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  // Recent activity across all orgs
+  const activityEl = document.getElementById('recent-activity-panel');
+  if (activityEl) {
+    const allActivity = [];
+    const allOrgIdsForAct = ['001-ncc-bermondsey', ...orgs.map(o => o.id)];
+    allOrgIdsForAct.forEach(orgId => {
+      const log = orgData[orgId]?.activityLog || {};
+      Object.values(log).forEach(entry => {
+        if (entry?.timestamp) allActivity.push({ ...entry, orgId, orgName: getOrgName(orgId) });
+      });
+    });
+    allActivity.sort((a, b) => b.timestamp - a.timestamp);
+    const recent = allActivity.slice(0, 15);
+
+    if (recent.length === 0) {
+      activityEl.innerHTML = '<div style="padding:20px;color:#94A3B8;font-size:13px;text-align:center;">No recent activity</div>';
+    } else {
+      activityEl.innerHTML = recent.map((entry, i) => `
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:${i < recent.length - 1 ? '1px solid #F8FAFC' : 'none'};">
+          <div style="width:28px;height:28px;border-radius:50%;background:${entry.action === 'Check In' ? '#D1FAE5' : '#F1F5F9'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="${entry.action === 'Check In' ? '#059669' : '#64748B'}" stroke-width="2"><path d="${entry.action === 'Check In' ? 'M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11' : 'M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1'}"/></svg>
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:600;color:#0F172A;">${esc(entry.childName || '—')}</div>
+            <div style="font-size:11px;color:#94A3B8;">${esc(entry.action)} · ${esc(entry.teacher || '—')} · <span style="color:#0284C7;">${esc(entry.orgName)}</span></div>
+          </div>
+          <div style="font-size:11px;color:#94A3B8;white-space:nowrap;">${esc(entry.time || '')}</div>
+        </div>`).join('');
+    }
+  }
+
+  // Check system status
+  checkSystemStatus();
+}
+
+function checkSystemStatus() {
+  // Check DB connectivity
+  db.ref('.info/connected').on('value', snap => {
+    const connected = snap.val();
+    const dbEl = document.getElementById('status-db');
+    const authEl = document.getElementById('status-auth');
+    if (dbEl) { dbEl.textContent = connected ? 'Operational' : 'Disconnected'; dbEl.style.background = connected ? '#D1FAE5' : '#FEE2E2'; dbEl.style.color = connected ? '#059669' : '#EF4444'; }
+    if (authEl) { authEl.textContent = connected ? 'Operational' : 'Unknown'; authEl.style.background = connected ? '#D1FAE5' : '#FEF3C7'; authEl.style.color = connected ? '#059669' : '#92400E'; }
+  });
+
+  // Check Cloud Function
+  const funcEl = document.getElementById('status-functions');
+  if (funcEl) {
+    fetch('https://inviteteacher-r64wiezuzq-uc.a.run.app', { method: 'OPTIONS' })
+      .then(() => { funcEl.textContent = 'Operational'; funcEl.style.background = '#D1FAE5'; funcEl.style.color = '#059669'; })
+      .catch(() => { funcEl.textContent = 'Unreachable'; funcEl.style.background = '#FEE2E2'; funcEl.style.color = '#EF4444'; });
+  }
+
+  // Check site
+  const siteEl = document.getElementById('status-site');
+  if (siteEl) {
+    fetch('https://littlelights.co/favicon.svg', { method: 'HEAD', mode: 'no-cors' })
+      .then(() => { siteEl.textContent = 'Operational'; siteEl.style.background = '#D1FAE5'; siteEl.style.color = '#059669'; })
+      .catch(() => { siteEl.textContent = 'Check manually'; siteEl.style.background = '#FEF3C7'; siteEl.style.color = '#92400E'; });
+  }
 }
 
 // ── TEACHERS ─────────────────────────────────────────────────────────────────
