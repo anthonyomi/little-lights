@@ -24,7 +24,7 @@
       width: 240px; background: #1A2744; display: flex; flex-direction: column;
       position: fixed; left: 0; top: 0; bottom: 0; z-index: 100;
     }
-    #main { margin-left: 240px; flex: 1; padding: 36px 40px; max-width: 940px; }
+    #main { margin-left: 240px; flex: 1; padding: 36px 48px; max-width: 1200px; }
 
     /* Sidebar */
     .sidebar-logo { padding: 24px 20px 12px; }
@@ -131,11 +131,14 @@
     }
 
     /* Stat grid */
-    .stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; margin-bottom: 28px; }
-    .stat-card { background: #fff; border-radius: 14px; padding: 20px; border: 1px solid #E2E8F0; display: flex; align-items: flex-start; gap: 16px; }
-    .stat-icon { width: 44px; height: 44px; border-radius: 12px; background: #E0F2FE; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .stat-value { font-size: 26px; font-weight: 700; color: #0F172A; line-height: 1.1; }
-    .stat-label { font-size: 13px; font-weight: 600; color: #475569; margin-top: 2px; }
+    .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+    .stat-card { background: #fff; border-radius: 14px; padding: 24px; border: 1px solid #E2E8F0; display: flex; align-items: center; gap: 16px; }
+    .stat-icon { width: 48px; height: 48px; border-radius: 12px; background: #E0F2FE; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .stat-value { font-size: 30px; font-weight: 700; color: #0F172A; line-height: 1.1; }
+    .stat-label { font-size: 13px; font-weight: 600; color: #475569; margin-top: 4px; }
+    .stat-sub { font-size: 12px; color: #94A3B8; margin-top: 2px; }
+    @media (max-width: 1000px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 600px) { .stat-grid { grid-template-columns: 1fr; } }
     .stat-sub { font-size: 12px; color: #94A3B8; margin-top: 2px; }
 
     /* Teacher row */
@@ -322,9 +325,9 @@
           <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0284C7" stroke-width="1.75"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg></div>
           <div><div class="stat-value" id="stat-teachers">—</div><div class="stat-label">Teachers</div><div class="stat-sub" id="stat-teachers-sub"></div></div>
         </div>
-        <div class="stat-card" style="align-items:flex-start;">
-          <div class="stat-icon" style="background:#D1FAE5;flex-shrink:0;margin-top:2px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="1.75"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg></div>
-          <div><div class="stat-value" id="stat-status" style="color:#059669;font-size:20px;">—</div><div class="stat-label">System Status</div><div class="stat-sub" id="stat-status-sub"></div></div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#D1FAE5;flex-shrink:0;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="1.75"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg></div>
+          <div><div class="stat-value" id="stat-status" style="color:#059669;font-size:22px;">—</div><div class="stat-label">System Status</div><div class="stat-sub" id="stat-status-sub"></div></div>
         </div>
       </div>
 
@@ -375,44 +378,6 @@
             </div>
           </div>
 
-        </div>
-      </div>
-
-      <!-- Platform usage chart -->
-      <div>
-        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#94A3B8;margin-bottom:12px;">Platform Usage</div>
-        <div class="card" style="padding:24px;">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;">
-
-            <!-- Children vs plan limit bar chart -->
-            <div>
-              <div style="font-size:13px;font-weight:600;color:#334155;margin-bottom:16px;">Children vs Plan Limit</div>
-              <div id="chart-children" style="display:flex;flex-direction:column;gap:14px;"></div>
-            </div>
-
-            <!-- Teachers per org -->
-            <div>
-              <div style="font-size:13px;font-weight:600;color:#334155;margin-bottom:16px;">Teachers per Organisation</div>
-              <div id="chart-teachers" style="display:flex;flex-direction:column;gap:14px;"></div>
-            </div>
-
-          </div>
-
-          <!-- Summary row -->
-          <div style="margin-top:24px;padding-top:20px;border-top:1px solid #F1F5F9;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
-            <div style="text-align:center;">
-              <div style="font-size:22px;font-weight:700;color:#0284C7;" id="chart-total-children">—</div>
-              <div style="font-size:12px;color:#94A3B8;margin-top:2px;">Total children on platform</div>
-            </div>
-            <div style="text-align:center;">
-              <div style="font-size:22px;font-weight:700;color:#059669;" id="chart-capacity">—</div>
-              <div style="font-size:12px;color:#94A3B8;margin-top:2px;">Total plan capacity</div>
-            </div>
-            <div style="text-align:center;">
-              <div style="font-size:22px;font-weight:700;color:#F59E0B;" id="chart-utilisation">—</div>
-              <div style="font-size:12px;color:#94A3B8;margin-top:2px;">Overall utilisation</div>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -828,56 +793,6 @@ function renderDashboard() {
         </div>`;
       }).join('');
     }
-  }
-
-  // Charts
-  const allOrgsForChart = orgs.map(o => ({ id: o.id, name: o.name, plan: o.plan || 'free' }));
-
-  const childrenChartEl = document.getElementById('chart-children');
-  const teachersChartEl = document.getElementById('chart-teachers');
-  if (childrenChartEl && teachersChartEl) {
-    let totalCap = 0;
-    childrenChartEl.innerHTML = allOrgsForChart.map(org => {
-      const count = Object.keys(orgData[org.id]?.children || {}).length;
-      const limit = PLAN_LIMITS[org.plan] || 15;
-      const pct = limit === Infinity ? 0 : Math.min((count / limit) * 100, 100);
-      const barColor = pct >= 90 ? '#EF4444' : pct >= 70 ? '#F59E0B' : '#0284C7';
-      if (limit !== Infinity) totalCap += limit;
-      return `<div>
-        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;">
-          <span style="font-weight:500;color:#334155;">${esc(org.name)}</span>
-          <span style="color:#94A3B8;">${count}${limit !== Infinity ? '/' + limit : ''}</span>
-        </div>
-        <div style="height:8px;background:#F1F5F9;border-radius:4px;">
-          <div style="height:8px;border-radius:4px;width:${pct}%;background:${barColor};transition:width .4s;"></div>
-        </div>
-      </div>`;
-    }).join('');
-
-    teachersChartEl.innerHTML = allOrgsForChart.map(org => {
-      const count = Object.keys(orgData[org.id]?.teachers || {}).length;
-      const maxTeachers = Math.max(...allOrgsForChart.map(o => Object.keys(orgData[o.id]?.teachers || {}).length), 1);
-      const pct = (count / maxTeachers) * 100;
-      return `<div>
-        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;">
-          <span style="font-weight:500;color:#334155;">${esc(org.name)}</span>
-          <span style="color:#94A3B8;">${count} teacher${count !== 1 ? 's' : ''}</span>
-        </div>
-        <div style="height:8px;background:#F1F5F9;border-radius:4px;">
-          <div style="height:8px;border-radius:4px;width:${pct}%;background:#8B5CF6;transition:width .4s;"></div>
-        </div>
-      </div>`;
-    }).join('');
-
-    // Summary
-    const totalChildrenAll = allOrgsForChart.reduce((s, o) => s + Object.keys(orgData[o.id]?.children || {}).length, 0);
-    const utilPct = totalCap ? Math.round((totalChildrenAll / totalCap) * 100) : 0;
-    const ctEl = document.getElementById('chart-total-children');
-    const capEl = document.getElementById('chart-capacity');
-    const utilEl = document.getElementById('chart-utilisation');
-    if (ctEl) ctEl.textContent = totalChildrenAll;
-    if (capEl) capEl.textContent = totalCap;
-    if (utilEl) utilEl.textContent = utilPct + '%';
   }
 
   // Check system status
