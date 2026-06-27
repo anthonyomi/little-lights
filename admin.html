@@ -657,6 +657,8 @@ function startListeners() {
   db.ref('superAdmin/orgs').on('value', snap => {
     orgs = snap.val() ? Object.values(snap.val()) : [];
     loadAllOrgData();
+    renderDashboard();
+    renderOrgs();
   });
 
   // Flat teachers for counts
