@@ -435,7 +435,6 @@
         <div class="field" style="margin:0;min-width:200px;">
           <select id="teacher-org-filter" onchange="renderTeachers()" style="height:100%;padding:10px 12px;border:1.5px solid #E2E8F0;border-radius:10px;font-size:14px;background:#fff;outline:none;color:#0F172A;width:100%;">
             <option value="">All Organisations</option>
-            <option value="__current__">New Covenant Church Bermondsey</option>
           </select>
         </div>
       </div>
@@ -462,35 +461,6 @@
           Add Organisation
         </button>
       </div>
-      <!-- NCC org card -->
-      <div class="card" style="margin-bottom:12px;">
-        <div style="display:flex;align-items:flex-start;gap:14px;">
-          <div style="width:44px;height:44px;border-radius:12px;background:#F1F5F9;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.75"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-          </div>
-          <div style="flex:1;">
-            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
-              <strong style="font-size:15px;">New Covenant Church Bermondsey</strong>
-              <span class="badge" style="background:#D1FAE5;color:#059669;"><span class="badge-dot" style="background:#059669;"></span>Active</span>
-              <span class="badge" style="background:#F1F5F9;color:#64748B;">Free</span>
-            </div>
-            <div style="font-size:12px;color:#94A3B8;">Bermondsey, London · anthony.omisade@yahoo.co.uk</div>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
-            <button class="btn btn-secondary btn-sm" onclick="window.open('https://littlelights.co/app?org=001-ncc-bermondsey&orgname=New%20Covenant%20Church%20Bermondsey','_blank')">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-              Open
-            </button>
-            <div class="toggle-wrap">
-              <button class="toggle" style="background:#0284C7;" onclick="confirmToggleNCC()">
-                <div class="toggle-knob" style="left:23px;"></div>
-              </button>
-              <span style="font-size:11px;color:#94A3B8;">Active</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div id="orgs-list"></div>
     </div>
 
@@ -669,8 +639,7 @@ function startListeners() {
 }
 
 function loadAllOrgData() {
-  // Always load NCC
-  const allOrgIds = ['001-ncc-bermondsey', ...orgs.map(o => o.id)];
+  const allOrgIds = orgs.map(o => o.id);
 
   allOrgIds.forEach(orgId => {
     if (orgData[orgId]) return; // already listening
@@ -710,17 +679,13 @@ function showSection(name) {
 
 // ── DASHBOARD ────────────────────────────────────────────────────────────────
 const PLAN_LIMITS = { free: 15, starter: 50, growing: 150, multisite: Infinity };
-const ORG_NAMES = { '001-ncc-bermondsey': 'New Covenant Church Bermondsey' };
-const ORG_URLS = { '001-ncc-bermondsey': 'https://littlelights.co/app?org=001-ncc-bermondsey&orgname=New%20Covenant%20Church%20Bermondsey' };
 
 function getOrgName(orgId) {
-  if (ORG_NAMES[orgId]) return ORG_NAMES[orgId];
   const o = orgs.find(o => o.id === orgId);
   return o?.name || orgId;
 }
 
 function getOrgUrl(orgId) {
-  if (ORG_URLS[orgId]) return ORG_URLS[orgId];
   const name = getOrgName(orgId);
   return `https://littlelights.co/app?org=${orgId}&orgname=${encodeURIComponent(name)}`;
 }
@@ -754,11 +719,11 @@ function getActivityStatus(orgId) {
 }
 
 function renderDashboard() {
-  const allOrgIds = ['001-ncc-bermondsey', ...orgs.map(o => o.id)];
+  const allOrgIds = orgs.map(o => o.id);
   const totalChildren = allOrgIds.reduce((sum, id) => sum + Object.keys(orgData[id]?.children || {}).length, 0);
   const totalTeachers = teachers.length;
   const adminCount = teachers.filter(t => t.role === 'admin').length;
-  const activeOrgs = orgs.filter(o => o.active !== false).length + 1;
+  const activeOrgs = orgs.filter(o => o.active !== false).length;
 
   // Top stats
   document.getElementById('stat-orgs').textContent = allOrgIds.length;
@@ -781,10 +746,7 @@ function renderDashboard() {
       unknown:  { bg: '#F1F5F9', color: '#64748B', dot: '#94A3B8', label: 'Unknown' },
     };
 
-    const nccMeta = { id: '001-ncc-bermondsey', name: 'New Covenant Church Bermondsey', plan: 'free', active: true };
-    const allOrgsForDisplay = [nccMeta, ...orgs.map(o => ({ id: o.id, name: o.name, plan: o.plan || 'free', active: o.active !== false }))];
-
-    healthEl.innerHTML = allOrgsForDisplay.map(org => {
+    healthEl.innerHTML = orgs.map(org => {
       const childCount = Object.keys(orgData[org.id]?.children || {}).length;
       const teacherCount = Object.keys(orgData[org.id]?.teachers || {}).length;
       const lastAct = getLastActivityDisplay(org.id);
@@ -841,9 +803,7 @@ function renderDashboard() {
   const alertsEl = document.getElementById('alerts-panel');
   if (alertsEl) {
     const alerts = [];
-    const allOrgsAll = [{ id: '001-ncc-bermondsey', name: 'New Covenant Church Bermondsey', plan: 'free', active: true }, ...orgs.map(o => ({ id: o.id, name: o.name, plan: o.plan || 'free', active: o.active !== false }))];
-
-    allOrgsAll.forEach(org => {
+    orgs.forEach(org => {
       const childCount = Object.keys(orgData[org.id]?.children || {}).length;
       const teacherCount = Object.keys(orgData[org.id]?.teachers || {}).length;
       const limit = PLAN_LIMITS[org.plan] || 15;
@@ -871,10 +831,7 @@ function renderDashboard() {
   }
 
   // Charts
-  const allOrgsForChart = [
-    { id: '001-ncc-bermondsey', name: 'NCC Bermondsey', plan: 'free' },
-    ...orgs.map(o => ({ id: o.id, name: o.name, plan: o.plan || 'free' }))
-  ];
+  const allOrgsForChart = orgs.map(o => ({ id: o.id, name: o.name, plan: o.plan || 'free' }));
 
   const childrenChartEl = document.getElementById('chart-children');
   const teachersChartEl = document.getElementById('chart-teachers');
@@ -954,12 +911,12 @@ function renderTeachers() {
   const orgFilter = document.getElementById('teacher-org-filter')?.value || '';
 
   const orgName = t => {
-    if (!t.orgId || t.orgId === '001-ncc-bermondsey') return 'New Covenant Church Bermondsey';
-    return orgs.find(o => o.id === t.orgId)?.name || t.orgId;
+    const o = orgs.find(o => o.id === t.orgId);
+    return o?.name || t.orgId || 'Unknown';
   };
   const orgShort = t => {
-    if (!t.orgId || t.orgId === '001-ncc-bermondsey') return 'NCC Bermondsey';
-    return orgs.find(o => o.id === t.orgId)?.name || t.orgId;
+    const o = orgs.find(o => o.id === t.orgId);
+    return o?.name || t.orgId || 'Unknown';
   };
 
   let filtered = teachers.filter(t =>
@@ -967,8 +924,7 @@ function renderTeachers() {
   );
 
   // Apply org filter
-  if (orgFilter === '__current__') filtered = filtered.filter(t => !t.orgId || t.orgId === '001-ncc-bermondsey');
-  else if (orgFilter) filtered = filtered.filter(t => t.orgId === orgFilter);
+  if (orgFilter) filtered = filtered.filter(t => t.orgId === orgFilter);
 
   const list = document.getElementById('teachers-list');
   if (filtered.length === 0) {
@@ -1006,7 +962,8 @@ function renderTeachers() {
 function toggleRole(uid, name, currentlyAdmin) {
   const newRole = currentlyAdmin ? 'standard' : 'admin';
   const teacher = teachers.find(t => t.uid === uid);
-  const orgId = teacher?.orgId || '001-ncc-bermondsey';
+  const orgId = teacher?.orgId;
+  if (!orgId) { showToast('Teacher has no org assigned', true); return; }
   db.ref(`orgs/${orgId}/teachers/${uid}`).update({ role: newRole })
     .then(() => showToast(name + ' is now ' + (newRole === 'admin' ? 'an Admin' : 'a Standard teacher')))
     .catch(() => showToast('Failed to update role', true));
@@ -1026,17 +983,16 @@ function confirmRemove(uid, name) {
 
 function removeTeacher(uid, name) {
   const teacher = teachers.find(t => t.uid === uid);
-  const orgId = teacher?.orgId || '001-ncc-bermondsey';
+  const orgId = teacher?.orgId;
+  if (!orgId) { showToast('Teacher has no org assigned', true); return; }
   db.ref(`orgs/${orgId}/teachers/${uid}`).remove()
     .then(() => { showToast(name + ' has been removed'); closeModal(); })
     .catch(() => showToast('Failed to remove teacher', true));
 }
 
 function openInviteModal() {
-  // Build org options — always include current org, plus any additional orgs
-  const orgOptions = ['<option value="__current__">New Covenant Church Bermondsey</option>']
-    .concat(orgs.map(o => `<option value="${esc(o.id)}">${esc(o.name)}</option>`))
-    .join('');
+  const orgOptions = '<option value="">Select organisation…</option>' +
+    orgs.map(o => `<option value="${esc(o.id)}">${esc(o.name)}</option>`).join('');
 
   showModal(`
     <div class="modal-header"><h3>Invite Teacher</h3><button onclick="closeModal()" style="background:none;border:none;cursor:pointer;padding:4px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.75"><path d="M6 18L18 6M6 6l12 12"/></svg></button></div>
@@ -1068,35 +1024,25 @@ function doInvite() {
   const role = document.getElementById('inv-role').value;
   const orgId = document.getElementById('inv-org').value;
   const msg = document.getElementById('inv-msg');
-  if (!name || !email) return;
+  if (!name || !email || !orgId) {
+    if (!orgId) msg.innerHTML = '<div class="error-msg">Please select an organisation.</div>';
+    return;
+  }
 
-  // Work out org name for the email
-  const orgName = orgId === '__current__'
-    ? 'New Covenant Church Bermondsey'
-    : (orgs.find(o => o.id === orgId)?.name || 'New Covenant Church Bermondsey');
+  const orgName = orgs.find(o => o.id === orgId)?.name || orgId;
 
   msg.innerHTML = '<div style="color:#475569;font-size:13px;margin-bottom:12px;">Sending invite…</div>';
 
   fetch(INVITE_FUNCTION_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, email, role, orgName, orgId: orgId === '__current__' ? '001-ncc-bermondsey' : orgId }),
+    body: JSON.stringify({ name, email, role, orgName, orgId }),
   })
   .then(r => r.json())
   .then(data => {
     if (data.error) {
       msg.innerHTML = '<div class="error-msg">' + esc(data.error) + '</div>';
       return;
-    }
-    // Also save orgId to the teacher record
-    if (orgId !== '__current__') {
-      db.ref('teachers').orderByChild('email').equalTo(email).once('value')
-        .then(snap => {
-          if (snap.exists()) {
-            const key = Object.keys(snap.val())[0];
-            db.ref('teachers/' + key).update({ orgId });
-          }
-        });
     }
     msg.innerHTML = '<div class="success-msg">Invite sent to ' + esc(email) + '! They\'ll receive a branded email from hello@littlelights.co.</div>';
     document.getElementById('inv-name').value = '';
@@ -1115,7 +1061,8 @@ function renderOrgs() {
   const filterEl = document.getElementById('teacher-org-filter');
   if (filterEl) {
     const current = filterEl.value;
-    filterEl.innerHTML = '<option value="">All Organisations</option><option value="__current__">New Covenant Church Bermondsey</option>' +
+    filterEl.innerHTML = '<option value="">All Organisations</option>' +
+      orgs.map(o => `<option value="${esc(o.id)}">${esc(o.name)}</option>`).join('');
       orgs.map(o => `<option value="${esc(o.id)}">${esc(o.name)}</option>`).join('');
     filterEl.value = current;
   }
@@ -1158,22 +1105,6 @@ function renderOrgs() {
         </div>
       </div>`;
   }).join('');
-}
-
-function confirmToggleNCC() {
-  showModal(`
-    <div class="modal-header"><h3>Suspend Organisation</h3><button onclick="closeModal()" style="background:none;border:none;cursor:pointer;padding:4px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.75"><path d="M6 18L18 6M6 6l12 12"/></svg></button></div>
-    <div class="modal-body">
-      <div style="background:#FEE2E2;border:1px solid #EF4444;border-radius:10px;padding:14px 16px;margin-bottom:16px;display:flex;gap:10px;align-items:flex-start;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="1.75" style="flex-shrink:0;margin-top:1px;"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-        <div style="font-size:13px;color:#991B1B;line-height:1.5;">Suspending <strong>New Covenant Church Bermondsey</strong> will prevent all their teachers from logging into the app.</div>
-      </div>
-      <p style="color:#475569;font-size:14px;margin-bottom:20px;">Are you sure you want to suspend this organisation?</p>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-        <button class="btn btn-danger" onclick="closeModal(); showToast('NCC Bermondsey suspension is managed via Firebase directly.')">Yes, Suspend</button>
-      </div>
-    </div>`);
 }
 
 function toggleOrg(id, currentlyActive) {
