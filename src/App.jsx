@@ -2006,17 +2006,22 @@ export default function App() {
       setHistoryLoaded(true);
     });
 
-    // Probe: try known org IDs to find where the real attendance data lives
-    const orgCandidates = ["ncc-bermondsey", "ncc_bermondsey", "littlelights", "little-lights", "default"];
-    Promise.all(orgCandidates.map(orgId =>
-      get(dbRef(db, `orgs/${orgId}/attendance`))
-        .then(snap => ({ orgId, keys: snap.val() ? Object.keys(snap.val()) : null }))
-        .catch(() => ({ orgId, keys: null }))
-    )).then(results => {
-      results.forEach(({ orgId, keys }) => {
-        if (keys) console.log(`[LL] FOUND orgs/${orgId}/attendance: ${keys.length} dates, latest: ${keys.sort().slice(-3)}`);
-        else console.log(`[LL] orgs/${orgId}/attendance: empty or no access`);
-      });
+    // Probe: look up the user's own org mapping, then read their org's attendance
+    get(dbRef(db, `users/${user.uid}`)).then(snap => {
+      console.log("[LL] users/uid node:", snap.val() ? JSON.stringify(snap.val()) : "null/no access");
+    }).catch(err => console.log("[LL] users/uid failed:", err.message));
+
+    // Also try reading the user's own record to find orgId
+    get(dbRef(db, `teachers/${user.uid}`)).then(snap => {
+      console.log("[LL] teachers/uid node:", snap.val() ? JSON.stringify(snap.val()) : "null");
+    }).catch(err => console.log("[LL] teachers/uid failed:", err.message));
+
+    // Try to list what top-level nodes we have permission to read
+    ["users", "members", "orgs/ncc-bermondsey/children", "orgs/ncc-bermondsey", "children", "attendance"].forEach(path => {
+      get(dbRef(db, path)).then(snap => {
+        const val = snap.val();
+        console.log(`[LL] probe ${path}:`, val ? (typeof val === 'object' ? Object.keys(val).slice(0,5) : val) : "null");
+      }).catch(err => console.log(`[LL] probe ${path}: ERROR ${err.message}`));
     });
 
     // Activity log: server-side limit to 100 — don't download the whole node and slice in JS
