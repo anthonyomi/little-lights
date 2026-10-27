@@ -1938,6 +1938,7 @@ export default function App() {
   const [historyLoaded, setHistoryLoaded] = useState(false);
   const [activityLog, setActivityLog] = useState([]);
   const [search, setSearch] = useState("");
+  const [childFilter, setChildFilter] = useState({ group: "all", gender: "all", visitor: false });
   const [modal, setModal] = useState(null);
   const [collectorModal, setCollectorModal] = useState(null); // { childId }
   const [calMonth, setCalMonth] = useState(() => { const n = new Date(); return { y: n.getFullYear(), m: n.getMonth() }; });
@@ -2080,7 +2081,15 @@ export default function App() {
 
   const handleSignOut = () => { signOut(auth); setUser(null); setTeacherName(""); setChildren([]); setAttendance([]); };
 
-  const filtered = children.filter(c => !search || c.name.toLowerCase().includes(search.toLowerCase())).sort((a, b) => a.name.split(" ")[0].localeCompare(b.name.split(" ")[0]));
+  const filtered = children.filter(c => {
+    if (search && !c.name.toLowerCase().includes(search.toLowerCase())) return false;
+    if (childFilter.group === "nursery" && liveAge(c) > 5) return false;
+    if (childFilter.group === "juniors" && liveAge(c) < 6) return false;
+    if (childFilter.gender === "boy" && c.gender !== "Boy") return false;
+    if (childFilter.gender === "girl" && c.gender !== "Girl") return false;
+    if (childFilter.visitor && !c.visitor) return false;
+    return true;
+  }).sort((a, b) => a.name.split(" ")[0].localeCompare(b.name.split(" ")[0]));
 
   // Alerts
   const birthdays = children.filter(c => isBirthdayThisWeek(c.dob));
@@ -2447,7 +2456,7 @@ export default function App() {
           {/* ── CHILDREN ─────────────────────────────────────────────────────── */}
           {tab === "children" && (
             <div>
-              <div style={{ display: "flex", gap: 12, marginBottom: 20 }}>
+              <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
                 <div style={{ position: "relative", flex: 1 }}>
                   <div style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }}><Icon name="search" size={16} color={T.slate400} /></div>
                   <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search children…"
@@ -2455,6 +2464,26 @@ export default function App() {
                 </div>
                 <Btn onClick={() => setModal({ type: "add" })}><Icon name="plus" size={14} />Add Child</Btn>
               </div>
+              {/* Filter pills */}
+              {(() => {
+                const pill = (label, active, onClick) => (
+                  <button key={label} onClick={onClick} style={{ padding: "6px 14px", borderRadius: 20, border: `1.5px solid ${active ? T.teal : T.slate200}`, background: active ? T.teal : T.white, color: active ? "white" : T.slate600, fontSize: 13, fontWeight: active ? 600 : 400, cursor: "pointer", fontFamily: FONT, transition: "all .15s", whiteSpace: "nowrap" }}>{label}</button>
+                );
+                const hasFilters = childFilter.group !== "all" || childFilter.gender !== "all" || childFilter.visitor;
+                return (
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16, alignItems: "center" }}>
+                    {pill("Nursery (0–5)", childFilter.group === "nursery", () => setChildFilter(f => ({ ...f, group: f.group === "nursery" ? "all" : "nursery" })))}
+                    {pill("Juniors (6–11)", childFilter.group === "juniors", () => setChildFilter(f => ({ ...f, group: f.group === "juniors" ? "all" : "juniors" })))}
+                    <div style={{ width: 1, height: 24, background: T.slate200 }} />
+                    {pill("Boys", childFilter.gender === "boy", () => setChildFilter(f => ({ ...f, gender: f.gender === "boy" ? "all" : "boy" })))}
+                    {pill("Girls", childFilter.gender === "girl", () => setChildFilter(f => ({ ...f, gender: f.gender === "girl" ? "all" : "girl" })))}
+                    <div style={{ width: 1, height: 24, background: T.slate200 }} />
+                    {pill("Visitors", childFilter.visitor, () => setChildFilter(f => ({ ...f, visitor: !f.visitor })))}
+                    {hasFilters && <button onClick={() => setChildFilter({ group: "all", gender: "all", visitor: false })} style={{ padding: "6px 12px", borderRadius: 20, border: "none", background: "none", color: T.slate400, fontSize: 13, cursor: "pointer", fontFamily: FONT }}>Clear</button>}
+                    <span style={{ marginLeft: "auto", fontSize: 13, color: T.slate400 }}>{filtered.length} child{filtered.length !== 1 ? "ren" : ""}</span>
+                  </div>
+                );
+              })()}
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 12 }}>
                 {filtered.map(child => {
