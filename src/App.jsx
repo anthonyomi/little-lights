@@ -1,4 +1,16 @@
 import { useState, useEffect, useRef } from "react";
+import { initializeApp } from "firebase/app";
+import {
+  getAuth, onAuthStateChanged, signInWithEmailAndPassword,
+  signInWithPopup, signOut, GoogleAuthProvider, sendPasswordResetEmail,
+} from "firebase/auth";
+import {
+  getDatabase, ref as dbRef, onValue, off, get, set, update, remove, push,
+  orderByKey, orderByChild, equalTo, limitToLast, query,
+} from "firebase/database";
+import {
+  getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject,
+} from "firebase/storage";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // FIREBASE CONFIG
@@ -15,19 +27,13 @@ const FIREBASE_CONFIG = {
 
 const ADMIN_EMAIL = "anthony.omisade@yahoo.co.uk";
 
-let firebaseApp = null, auth = null, db = null, storage = null;
-function initFirebase() {
-  if (firebaseApp) return;
-  try {
-    firebaseApp = window.firebase.initializeApp(FIREBASE_CONFIG);
-    auth = window.firebase.auth();
-    db = window.firebase.database();
-    storage = window.firebase.storage();
-  } catch (e) { console.error("Firebase init error", e); }
-}
+const firebaseApp = initializeApp(FIREBASE_CONFIG);
+const auth = getAuth(firebaseApp);
+const db = getDatabase(firebaseApp);
+const storage = getStorage(firebaseApp);
 
 function getGoogleProvider() {
-  const provider = new window.firebase.auth.GoogleAuthProvider();
+  const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: "select_account" });
   return provider;
 }
@@ -267,8 +273,8 @@ function Avatar({ child, size = 40, photoUrl = null }) {
 function usePhotoUrl(childId) {
   const [url, setUrl] = useState(null);
   useEffect(() => {
-    if (!childId || !storage) return;
-    storage.ref(`photos/${childId}`).getDownloadURL().then(u => setUrl(u)).catch(() => setUrl(null));
+    if (!childId) return;
+    getDownloadURL(storageRef(storage, `photos/${childId}`)).then(u => setUrl(u)).catch(() => setUrl(null));
   }, [childId]);
   return url;
 }
@@ -295,8 +301,8 @@ function ChildAvatar({ child, size = 40 }) {
   }, []);
 
   useEffect(() => {
-    if (!visible || !child?.id || !storage) return;
-    storage.ref(`photos/${child.id}`).getDownloadURL().then(u => setUrl(u)).catch(() => setUrl(null));
+    if (!visible || !child?.id) return;
+    getDownloadURL(storageRef(storage, `photos/${child.id}`)).then(u => setUrl(u)).catch(() => setUrl(null));
   }, [visible, child?.id]);
 
   return <span ref={ref}><Avatar child={child} size={size} photoUrl={url} /></span>;
@@ -456,8 +462,8 @@ function ChildForm({ initial, onSave, onClose, allChildren }) {
   const fileRef = useRef();
 
   useEffect(() => {
-    if (initial?.id && storage) {
-      storage.ref(`photos/${initial.id}`).getDownloadURL().then(url => setPhotoPreview(url)).catch(() => {});
+    if (initial?.id) {
+      getDownloadURL(storageRef(storage, `photos/${initial.id}`)).then(url => setPhotoPreview(url)).catch(() => {});
     }
   }, [initial?.id]);
 
@@ -482,9 +488,9 @@ function ChildForm({ initial, onSave, onClose, allChildren }) {
     if (Object.keys(errors).length > 0) { setFormErrors(errors); return; }
 
     const id = form.id || uid();
-    if (form._photoFile && storage) {
+    if (form._photoFile) {
       setUploading(true);
-      try { await storage.ref(`photos/${id}`).put(form._photoFile); } catch {}
+      try { await uploadBytes(storageRef(storage, `photos/${id}`), form._photoFile); } catch {}
       setUploading(false);
     }
     const { _photoFile, ...data } = form;
@@ -732,10 +738,10 @@ function QRDisplay({ child, allChildren, onClose }) {
     if (!scanToken) {
       // Generate and save a new token
       const token = generateScanToken();
-      db.ref(`children/${tokenHolder.id}/scanToken`).set(token).then(() => setGenerating(false));
+      set(dbRef(db, `children/${tokenHolder.id}/scanToken`), token).then(() => setGenerating(false));
       // Also save on all siblings so they all know the token
       for (const sib of siblings) {
-        db.ref(`children/${sib.id}/scanToken`).set(token);
+        set(dbRef(db, `children/${sib.id}/scanToken`), token);
       }
     }
   }, []);
@@ -976,9 +982,9 @@ function QRScanner({ children, attendance, sessionKey, sessionAtt, teacherName, 
     toCheckIn.forEach(child => {
       day[child.id] = { in: stamp, inTeacher: teacherName, out: null, outTeacher: null };
     });
-    await db.ref(`attendance/${sessionKey}`).set(day);
+    await set(dbRef(db, `attendance/${sessionKey}`), day);
     for (const child of toCheckIn) {
-      try { await db.ref(`activityLog/${Date.now() + Math.random()}`).set({ action: "Check In", childName: child.name, teacher: teacherName, timestamp: Date.now(), time: stamp }); } catch {}
+      try { await set(dbRef(db, `activityLog/${Date.now() + Math.random()}`), { action: "Check In", childName: child.name, teacher: teacherName, timestamp: Date.now(), time: stamp }); } catch {}
     }
     setSuccess(toCheckIn);
     setChecking(false);
@@ -1252,7 +1258,7 @@ function CheckInManager({ children, attendance, sessionKey }) {
   const resetChild = async (child) => {
     setResetting(r => ({ ...r, [child.id]: true }));
     try {
-      await db.ref(`attendance/${sessionKey}/${child.id}`).remove();
+      await remove(dbRef(db, `attendance/${sessionKey}/${child.id}`));
       setMsg(`${child.name.split(" ")[0]} reset.`);
       setTimeout(() => setMsg(""), 3000);
     } catch (e) { console.error(e); }
@@ -1261,7 +1267,7 @@ function CheckInManager({ children, attendance, sessionKey }) {
 
   const clearAll = async () => {
     try {
-      await db.ref(`attendance/${sessionKey}`).remove();
+      await remove(dbRef(db, `attendance/${sessionKey}`));
       setMsg("All check-ins cleared.");
       setTimeout(() => setMsg(""), 4000);
     } catch (e) { console.error(e); }
@@ -1316,7 +1322,7 @@ function CheckInManager({ children, attendance, sessionKey }) {
                 {isDone && (
                   <button onClick={async () => {
                     setResetting(r => ({ ...r, [child.id]: true }));
-                    await db.ref(`attendance/${sessionKey}/${child.id}`).update({ out: null, outTeacher: null, collectedBy: null });
+                    await update(dbRef(db, `attendance/${sessionKey}/${child.id}`), { out: null, outTeacher: null, collectedBy: null });
                     setMsg(`${child.name.split(" ")[0]} back to checked in.`);
                     setTimeout(() => setMsg(""), 3000);
                     setResetting(r => ({ ...r, [child.id]: false }));
@@ -1349,9 +1355,9 @@ function AdminPanel({ currentUser, children = [], attendance = {}, sessionKey = 
   const [success, setSuccess] = useState("");
 
   useEffect(() => {
-    const ref = db.ref("teachers");
-    ref.on("value", snap => { const data = snap.val(); setTeachers(data ? Object.values(data) : []); });
-    return () => ref.off();
+    const tRef = dbRef(db, "teachers");
+    const unsub = onValue(tRef, snap => { const data = snap.val(); setTeachers(data ? Object.values(data) : []); });
+    return () => unsub();
   }, []);
 
   const registerSelf = async () => {
@@ -1359,7 +1365,7 @@ function AdminPanel({ currentUser, children = [], attendance = {}, sessionKey = 
     setLoading(true); setError(""); setSuccess("");
     try {
       const u = auth.currentUser;
-      await db.ref(`teachers/${u.uid}`).set({ uid: u.uid, name: newName, email: u.email });
+      await set(dbRef(db, `teachers/${u.uid}`), { uid: u.uid, name: newName, email: u.email });
       setSuccess(`Registered as ${newName}!`);
       setNewName("");
     } catch (e) { setError(e.message); }
@@ -1377,8 +1383,8 @@ function AdminPanel({ currentUser, children = [], attendance = {}, sessionKey = 
       });
       const data = await res.json();
       if (data.error) { setError(data.error.message === "EMAIL_EXISTS" ? "That email is already registered." : data.error.message); setLoading(false); return; }
-      await db.ref(`teachers/${data.localId}`).set({ uid: data.localId, name: newName, email: newEmail });
-      await auth.sendPasswordResetEmail(newEmail);
+      await set(dbRef(db, `teachers/${data.localId}`), { uid: data.localId, name: newName, email: newEmail });
+      await sendPasswordResetEmail(auth, newEmail);
       setSuccess(`Invite sent to ${newEmail}!`);
       setNewEmail(""); setNewName("");
     } catch (e) { setError(e.message); }
@@ -1388,7 +1394,7 @@ function AdminPanel({ currentUser, children = [], attendance = {}, sessionKey = 
   const removeTeacher = async t => {
     if (t.uid === currentUser.uid) { setError("You cannot remove yourself."); return; }
     if (!window.confirm(`Remove ${t.name}?`)) return;
-    await db.ref(`teachers/${t.uid}`).remove();
+    await remove(dbRef(db, `teachers/${t.uid}`));
   };
 
   const inp = { width: "100%", border: `1.5px solid ${T.slate200}`, borderRadius: 8, padding: "9px 12px", fontSize: 14, fontFamily: FONT, background: T.white, color: T.slate800, outline: "none", boxSizing: "border-box", marginBottom: 10 };
@@ -1466,7 +1472,7 @@ function LoginScreen() {
   const handleLogin = async () => {
     if (!email || !password) { setError("Please enter your email and password."); return; }
     setLoading(true); setError("");
-    try { await auth.signInWithEmailAndPassword(email, password); }
+    try { await signInWithEmailAndPassword(auth, email, password); }
     catch { setError("Incorrect email or password. Please try again."); }
     setLoading(false);
   };
@@ -1474,13 +1480,14 @@ function LoginScreen() {
   const handleGoogleLogin = async () => {
     setGoogleLoading(true); setError("");
     try {
-      const result = await auth.signInWithPopup(getGoogleProvider());
+      const result = await signInWithPopup(auth, getGoogleProvider());
       const u = result.user;
       // Check if this Google account is a registered teacher
-      const snap = await db.ref("teachers").orderByChild("email").equalTo(u.email).once("value");
+      const teachersQ = query(dbRef(db, "teachers"), orderByChild("email"), equalTo(u.email));
+      const snap = await get(teachersQ);
       if (!snap.exists() && u.email !== ADMIN_EMAIL) {
         // Not a registered teacher — sign them back out
-        await auth.signOut();
+        await signOut(auth);
         setError("Your Google account isn't set up as a teacher. Please ask your admin to invite you.");
         setGoogleLoading(false);
         return;
@@ -1490,7 +1497,7 @@ function LoginScreen() {
         const teacherKey = Object.keys(snap.val())[0];
         const teacher = snap.val()[teacherKey];
         if (teacher.uid !== u.uid) {
-          await db.ref(`teachers/${teacherKey}`).update({ uid: u.uid });
+          await update(dbRef(db, `teachers/${teacherKey}`), { uid: u.uid });
         }
       }
     } catch (e) {
@@ -1871,7 +1878,6 @@ function Sidebar({ tab, setTab, teacherName, onSignOut, isAdmin, mobile, onClose
 // MAIN APP
 // ─────────────────────────────────────────────────────────────────────────────
 export default function App() {
-  const [firebaseReady, setFirebaseReady] = useState(false);
   const [user, setUser] = useState(null);
   const [teacherName, setTeacherName] = useState("");
   const [authLoading, setAuthLoading] = useState(true);
@@ -1888,31 +1894,12 @@ export default function App() {
   const [dataLoading, setDataLoading] = useState(true);
   const [mobileSidebar, setMobileSidebar] = useState(false);
 
-  // Load Firebase
-  useEffect(() => {
-    if (window.firebase) { initFirebase(); setFirebaseReady(true); return; }
-    const scripts = [
-      "https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js",
-      "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js",
-      "https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js",
-      "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js",
-    ];
-    let loaded = 0;
-    scripts.forEach(src => {
-      const s = document.createElement("script");
-      s.src = src; s.async = false;
-      s.onload = () => { if (++loaded === scripts.length) { initFirebase(); setFirebaseReady(true); } };
-      document.head.appendChild(s);
-    });
-  }, []);
-
   // Auth
   useEffect(() => {
-    if (!firebaseReady) return;
-    const unsub = auth.onAuthStateChanged(async u => {
+    const unsub = onAuthStateChanged(auth, async u => {
       setUser(u);
       if (u) {
-        const snap = await db.ref(`teachers/${u.uid}`).get();
+        const snap = await get(dbRef(db, `teachers/${u.uid}`));
         setTeacherName(snap.exists() ? snap.val().name : u.email);
         // Scroll to top after login
         window.scrollTo({ top: 0, behavior: "instant" });
@@ -1920,14 +1907,14 @@ export default function App() {
       setAuthLoading(false);
     });
     return () => unsub();
-  }, [firebaseReady]);
+  }, []);
 
   // Real-time listeners
   useEffect(() => {
-    if (!firebaseReady || !user) return;
+    if (!user) return;
     setDataLoading(true);
-    const childRef = db.ref("children");
-    const logRef = db.ref("activityLog");
+    const childRef = dbRef(db, "children");
+    const logRef = dbRef(db, "activityLog");
 
     // Attendance: split into two lightweight listeners instead of one full-history pull.
     //
@@ -1939,30 +1926,31 @@ export default function App() {
     //   1. sessionRef — real-time listener on ONLY today's session key (for live check-in counts)
     //   2. historyRef — one-time fetch of the last 13 Sundays (enough for 12-week chart + 8-week
     //      absence tracking). Not live — stale for the current day, which sessionRef covers.
-    const sessionRef = db.ref(`attendance/${dateKey((() => { const d = new Date(); if (d.getDay() !== 0) d.setDate(d.getDate() - d.getDay()); return d; })())}`);
-    const historyRef = db.ref("attendance").orderByKey().limitToLast(13);
+    const sessionRef = dbRef(db, `attendance/${dateKey((() => { const d = new Date(); if (d.getDay() !== 0) d.setDate(d.getDate() - d.getDay()); return d; })())}`);
+    const historyQ = query(dbRef(db, "attendance"), orderByKey(), limitToLast(13));
 
-    childRef.on("value", snap => { setChildren(snap.val() ? Object.values(snap.val()) : []); setDataLoading(false); });
+    const unsubChildren = onValue(childRef, snap => { setChildren(snap.val() ? Object.values(snap.val()) : []); setDataLoading(false); });
 
     // Session listener: keeps current check-in data live
-    sessionRef.on("value", snap => {
+    const unsubSession = onValue(sessionRef, snap => {
       const sessionKey = dateKey((() => { const d = new Date(); if (d.getDay() !== 0) d.setDate(d.getDate() - d.getDay()); return d; })());
       setAttendance(prev => ({ ...prev, [sessionKey]: snap.val() || {} }));
     });
 
     // History fetch: one-time, last 13 Sundays (for chart + absence display)
-    historyRef.once("value", snap => {
+    get(historyQ).then(snap => {
       setAttendance(prev => ({ ...prev, ...(snap.val() || {}) }));
     });
 
     // Activity log: server-side limit to 100 — don't download the whole node and slice in JS
-    logRef.orderByChild("timestamp").limitToLast(100).on("value", snap => {
+    const logQ = query(logRef, orderByChild("timestamp"), limitToLast(100));
+    const unsubLog = onValue(logQ, snap => {
       const data = snap.val();
       setActivityLog(data ? Object.values(data).sort((a,b) => b.timestamp - a.timestamp) : []);
     });
 
-    return () => { childRef.off(); sessionRef.off(); logRef.off(); };
-  }, [firebaseReady, user]);
+    return () => { unsubChildren(); unsubSession(); unsubLog(); };
+  }, [user]);
 
   // Session
   const today = new Date();
@@ -1978,7 +1966,7 @@ export default function App() {
 
   const logActivity = async (action, childName, collectedBy) => {
     const entry = { action, childName, teacher: teacherName, timestamp: Date.now(), time: stampNow(), ...(collectedBy ? { collectedBy } : {}) };
-    await db.ref(`activityLog/${Date.now()}`).set(entry);
+    await set(dbRef(db, `activityLog/${Date.now()}`), entry);
   };
 
   const toggleIn = async childId => {
@@ -1991,7 +1979,7 @@ export default function App() {
       day[childId] = { in: stampNow(), inTeacher: teacherName, out: null, outTeacher: null };
     }
     // Save attendance first — always
-    await db.ref(`attendance/${sessionKey}`).set(day);
+    await set(dbRef(db, `attendance/${sessionKey}`), day);
     // Log activity separately — don't let it block check-in
     if (isCheckIn) { try { await logActivity("Check In", child?.name); } catch {} }
   };
@@ -2000,21 +1988,21 @@ export default function App() {
     const child = children.find(c => c.id === childId);
     const rec = (attendance[sessionKey] || {})[childId];
     if (!rec) return;
-    await db.ref(`attendance/${sessionKey}/${childId}`).update({ out: stampNow(), outTeacher: teacherName, collectedBy: collectorName || null });
+    await update(dbRef(db, `attendance/${sessionKey}/${childId}`), { out: stampNow(), outTeacher: teacherName, collectedBy: collectorName || null });
     try { await logActivity("Check Out", child?.name, collectorName); } catch {}
   };
 
   const addOrUpdateChild = async form => {
     // Always recalculate and store the current age from DOB on save
     const updatedForm = form.dob ? { ...form, age: getAge(form.dob) ?? form.age } : form;
-    await db.ref(`children/${form.id}`).set(updatedForm);
+    await set(dbRef(db, `children/${form.id}`), updatedForm);
     // Update siblings bidirectionally
     if (form.siblings?.length) {
       for (const sibId of form.siblings) {
         const sib = children.find(c => c.id === sibId);
         if (sib) {
           const sibSiblings = Array.from(new Set([...(sib.siblings || []), form.id]));
-          await db.ref(`children/${sibId}/siblings`).set(sibSiblings);
+          await set(dbRef(db, `children/${sibId}/siblings`), sibSiblings);
         }
       }
     }
@@ -2022,11 +2010,11 @@ export default function App() {
   };
 
   const deleteChild = async id => {
-    await db.ref(`children/${id}`).remove();
-    if (storage) { try { await storage.ref(`photos/${id}`).delete(); } catch {} }
+    await remove(dbRef(db, `children/${id}`));
+    try { await deleteObject(storageRef(storage, `photos/${id}`)); } catch {}
   };
 
-  const handleSignOut = () => { auth.signOut(); setUser(null); setTeacherName(""); setChildren([]); setAttendance([]); };
+  const handleSignOut = () => { signOut(auth); setUser(null); setTeacherName(""); setChildren([]); setAttendance([]); };
 
   const filtered = children.filter(c => !search || c.name.toLowerCase().includes(search.toLowerCase())).sort((a, b) => a.name.split(" ")[0].localeCompare(b.name.split(" ")[0]));
 
@@ -2035,7 +2023,7 @@ export default function App() {
   const absentees = children.filter(c => !c.visitor && weeksAbsent(c.id, attendance, c.enrolled) >= 3);
 
   // Loading
-  if (!firebaseReady || authLoading) return (
+  if (authLoading) return (
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: T.slate900, fontFamily: FONT }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap'); * { box-sizing: border-box; } @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}`}</style>
       <div style={{ textAlign: "center", color: T.slate400 }}>
