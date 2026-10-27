@@ -1980,10 +1980,17 @@ export default function App() {
 
     const unsubChildren = onValue(childRef, snap => { setChildren(snap.val() ? Object.values(snap.val()) : []); setDataLoading(false); });
 
-    // Session listener: keeps current check-in data live
+    // Compute the session key once so both the listener and the history fetch agree
+    const sessionKey = dateKey((() => { const d = new Date(); if (d.getDay() !== 0) d.setDate(d.getDate() - d.getDay()); return d; })());
+
+    // Session listener: keeps the current Sunday's check-in data live.
+    // IMPORTANT: on non-Sundays snap.val() may be null (nobody checking in right now),
+    // but we must NOT overwrite that date with {} — it would wipe the history data we
+    // loaded below. Only set if snap.val() is non-null, i.e. there's actual data.
     const unsubSession = onValue(sessionRef, snap => {
-      const sessionKey = dateKey((() => { const d = new Date(); if (d.getDay() !== 0) d.setDate(d.getDate() - d.getDay()); return d; })());
-      setAttendance(prev => ({ ...prev, [sessionKey]: snap.val() || {} }));
+      if (snap.val() !== null) {
+        setAttendance(prev => ({ ...prev, [sessionKey]: snap.val() }));
+      }
     });
 
     // History fetch: one-time, last 13 Sundays (for chart + absence display).
