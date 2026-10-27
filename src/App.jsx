@@ -1998,14 +1998,25 @@ export default function App() {
     // Must resolve before absence badges render — otherwise everyone looks 8wk absent.
     get(historyQ).then(snap => {
       const data = snap.val() || {};
-      console.log("[LL] history keys:", Object.keys(data), "| count per week:", Object.fromEntries(Object.entries(data).map(([k,v]) => [k, Object.keys(v).length])));
+      console.log("[LL] /attendance keys:", Object.keys(data));
       setAttendance(prev => ({ ...prev, ...data }));
       setHistoryLoaded(true);
     }).catch(err => {
       console.error("[LL] History fetch failed:", err);
-      // Still mark loaded so UI doesn't stay in limbo; absence badges just won't show
       setHistoryLoaded(true);
     });
+
+    // Probe: check if org-based paths exist in the DB
+    get(dbRef(db, "orgs")).then(snap => {
+      if (snap.val()) {
+        console.log("[LL] orgs node keys:", Object.keys(snap.val()));
+        const firstOrg = Object.keys(snap.val())[0];
+        const attKeys = snap.val()[firstOrg]?.attendance ? Object.keys(snap.val()[firstOrg].attendance) : [];
+        console.log("[LL] orgs/" + firstOrg + "/attendance keys:", attKeys);
+      } else {
+        console.log("[LL] no orgs node found");
+      }
+    }).catch(err => console.log("[LL] orgs probe failed:", err.message));
 
     // Activity log: server-side limit to 100 — don't download the whole node and slice in JS
     const logQ = query(logRef, orderByChild("timestamp"), limitToLast(100));
