@@ -2496,7 +2496,7 @@ export default function App() {
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
                 <button onClick={() => setCalMonth(p => { const d = new Date(p.y, p.m - 1); return { y: d.getFullYear(), m: d.getMonth() }; })} style={{ background: T.white, border: `1.5px solid ${T.slate200}`, borderRadius: 8, width: 36, height: 36, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: T.slate600 }}>
-                  <Icon name="chevronRight" size={16} color={T.slate600} style={{ transform: "rotate(180deg)" }} />
+                  <span style={{ transform: "rotate(180deg)", display: "inline-flex" }}><Icon name="chevronRight" size={16} color={T.slate600} /></span>
                 </button>
                 <h2 style={{ flex: 1, margin: 0, fontSize: 18, fontWeight: 600, color: T.slate900 }}>
                   {new Date(calMonth.y, calMonth.m).toLocaleDateString("en-GB", { month: "long", year: "numeric" })}
