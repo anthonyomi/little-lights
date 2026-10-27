@@ -161,17 +161,24 @@ function isBirthdayThisWeek(dob) {
   return diff >= 0 && diff <= 7;
 }
 function weeksAbsent(childId, attendance, enrolled) {
-  const sundays = [];
   const today = new Date();
-  // Don't count weeks before the child was enrolled
   const enrolledDate = enrolled ? new Date(enrolled) : null;
+
+  // Build list of last 8 Sundays (for absence streak)
+  const sundays = [];
   for (let i = 0; i < 8; i++) {
     const d = new Date(today);
     d.setDate(d.getDate() - d.getDay() - i * 7);
-    // Skip any Sundays before the child's enrolled date
     if (enrolledDate && d < enrolledDate) break;
     sundays.push(dateKey(d));
   }
+
+  // Only flag absent if the child has attended at least once in the last 13 weeks.
+  // Children who have never attended (or only attended before our history window)
+  // shouldn't show an absent badge — they're just infrequent, not "gone missing".
+  const hasRecentHistory = Object.keys(attendance).some(dateStr => attendance[dateStr]?.[childId]);
+  if (!hasRecentHistory) return 0;
+
   let count = 0;
   for (const s of sundays) {
     if (attendance[s]?.[childId]) return count;
@@ -1144,7 +1151,7 @@ function QRScanner({ children, attendance, sessionKey, sessionAtt, teacherName, 
   );
 }
 
-function ChildDetail({ child, onClose, onEdit, onDelete, allChildren, attendance }) {
+function ChildDetail({ child, onClose, onEdit, onDelete, allChildren, attendance, historyLoaded }) {
   const photo = usePhotoUrl(child?.id);
   const group = getAgeGroup(liveAge(child));
   const absent = weeksAbsent(child.id, attendance, child.enrolled);
@@ -1984,6 +1991,10 @@ export default function App() {
     get(historyQ).then(snap => {
       setAttendance(prev => ({ ...prev, ...(snap.val() || {}) }));
       setHistoryLoaded(true);
+    }).catch(err => {
+      console.error("History fetch failed:", err);
+      // Still mark loaded so UI doesn't stay in limbo; absence badges just won't show
+      setHistoryLoaded(true);
     });
 
     // Activity log: server-side limit to 100 — don't download the whole node and slice in JS
@@ -2595,7 +2606,7 @@ export default function App() {
           <Modal onClose={() => setModal(null)} wide>
             <ChildDetail child={child} onClose={() => setModal(null)}
               onEdit={() => setModal({ type: "edit", payload: child })}
-              onDelete={deleteChild} allChildren={children} attendance={attendance} />
+              onDelete={deleteChild} allChildren={children} attendance={attendance} historyLoaded={historyLoaded} />
           </Modal>
         );
       })()}
