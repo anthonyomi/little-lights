@@ -1988,6 +1988,7 @@ export default function App() {
     // but we must NOT overwrite that date with {} — it would wipe the history data we
     // loaded below. Only set if snap.val() is non-null, i.e. there's actual data.
     const unsubSession = onValue(sessionRef, snap => {
+      console.log("[LL] session snap for", sessionKey, ":", snap.val() ? Object.keys(snap.val()).length + " records" : "null");
       if (snap.val() !== null) {
         setAttendance(prev => ({ ...prev, [sessionKey]: snap.val() }));
       }
@@ -1996,10 +1997,12 @@ export default function App() {
     // History fetch: one-time, last 13 Sundays (for chart + absence display).
     // Must resolve before absence badges render — otherwise everyone looks 8wk absent.
     get(historyQ).then(snap => {
-      setAttendance(prev => ({ ...prev, ...(snap.val() || {}) }));
+      const data = snap.val() || {};
+      console.log("[LL] history keys:", Object.keys(data), "| count per week:", Object.fromEntries(Object.entries(data).map(([k,v]) => [k, Object.keys(v).length])));
+      setAttendance(prev => ({ ...prev, ...data }));
       setHistoryLoaded(true);
     }).catch(err => {
-      console.error("History fetch failed:", err);
+      console.error("[LL] History fetch failed:", err);
       // Still mark loaded so UI doesn't stay in limbo; absence badges just won't show
       setHistoryLoaded(true);
     });
