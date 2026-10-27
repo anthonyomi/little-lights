@@ -266,22 +266,64 @@ const avatarColors = ["#0D9488","#3B82F6","#8B5CF6","#EC4899","#F59E0B","#10B981
 function Avatar({ child, size = 40, photoUrl = null }) {
   const initials = child?.name ? child.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : "?";
   const bg = avatarColors[(child?.name?.charCodeAt(0) || 0) % avatarColors.length];
-  if (photoUrl) return <img src={photoUrl} alt={child?.name} style={{ width: size, height: size, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: `2px solid ${T.slate200}` }} />;
+  if (photoUrl) return <img src={photoUrl} alt={child?.name} loading="lazy" decoding="async" style={{ width: size, height: size, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: `2px solid ${T.slate200}` }} />;
   return <div style={{ width: size, height: size, borderRadius: "50%", background: bg, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 600, fontSize: size * 0.35, flexShrink: 0, fontFamily: FONT, letterSpacing: ".02em" }}>{initials}</div>;
+}
+
+// ─── Photo URL queue ──────────────────────────────────────────────────────────
+// Rate-limits Firebase Storage getDownloadURL calls to MAX_CONCURRENT at a time.
+// Without this, scrolling into a list of 40+ children fires 40+ simultaneous
+// Storage requests + image decodes, spiking RAM and crashing Chrome on low-RAM
+// Android devices (Samsung Galaxy Tab A, 2 GB).
+const MAX_CONCURRENT_PHOTOS = 3;
+const photoCache = {};       // childId → url (or "error")
+const photoQueue = [];       // [{childId, resolve}]
+const photoCallbacks = {};   // childId → [resolve, ...]
+let photoRunning = 0;
+
+function drainPhotoQueue() {
+  while (photoRunning < MAX_CONCURRENT_PHOTOS && photoQueue.length > 0) {
+    const { childId } = photoQueue.shift();
+    photoRunning++;
+    getDownloadURL(storageRef(storage, `photos/${childId}`))
+      .then(url => { photoCache[childId] = url; })
+      .catch(() => { photoCache[childId] = "error"; })
+      .finally(() => {
+        photoRunning--;
+        const cbs = photoCallbacks[childId] || [];
+        delete photoCallbacks[childId];
+        cbs.forEach(cb => cb(photoCache[childId] === "error" ? null : photoCache[childId]));
+        drainPhotoQueue();
+      });
+  }
+}
+
+function fetchPhotoUrl(childId, callback) {
+  if (photoCache[childId] !== undefined) {
+    callback(photoCache[childId] === "error" ? null : photoCache[childId]);
+    return;
+  }
+  if (!photoCallbacks[childId]) {
+    photoCallbacks[childId] = [];
+    photoQueue.push({ childId });
+  }
+  photoCallbacks[childId].push(callback);
+  drainPhotoQueue();
 }
 
 function usePhotoUrl(childId) {
   const [url, setUrl] = useState(null);
   useEffect(() => {
     if (!childId) return;
-    getDownloadURL(storageRef(storage, `photos/${childId}`)).then(u => setUrl(u)).catch(() => setUrl(null));
+    fetchPhotoUrl(childId, u => setUrl(u));
   }, [childId]);
   return url;
 }
 
-// Lazy-loading avatar: only fetches the photo when the element scrolls into view.
-// On low-RAM devices (Samsung Galaxy Tab A etc.) loading all 40+ photos at once
-// causes Chrome to OOM-crash before the user sees anything.
+// Lazy-loading avatar: only fetches the photo when the element scrolls into view,
+// AND feeds the request through the rate-limiting queue so at most MAX_CONCURRENT_PHOTOS
+// Storage calls run at the same time. On low-RAM devices (Samsung Galaxy Tab A, 2 GB)
+// loading all 40+ photos simultaneously crashes Chrome with an OOM error.
 function ChildAvatar({ child, size = 40 }) {
   const [visible, setVisible] = useState(false);
   const [url, setUrl] = useState(null);
@@ -290,11 +332,10 @@ function ChildAvatar({ child, size = 40 }) {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    // IntersectionObserver is available in all modern browsers incl. Android Chrome
     if (!("IntersectionObserver" in window)) { setVisible(true); return; }
     const obs = new IntersectionObserver(
       ([entry]) => { if (entry.isIntersecting) { setVisible(true); obs.disconnect(); } },
-      { rootMargin: "200px" } // start loading a bit before it scrolls into view
+      { rootMargin: "0px" } // only load when actually in view — avoids bulk-loading the whole list
     );
     obs.observe(el);
     return () => obs.disconnect();
@@ -302,7 +343,7 @@ function ChildAvatar({ child, size = 40 }) {
 
   useEffect(() => {
     if (!visible || !child?.id) return;
-    getDownloadURL(storageRef(storage, `photos/${child.id}`)).then(u => setUrl(u)).catch(() => setUrl(null));
+    fetchPhotoUrl(child.id, u => setUrl(u));
   }, [visible, child?.id]);
 
   return <span ref={ref}><Avatar child={child} size={size} photoUrl={url} /></span>;
