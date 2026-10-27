@@ -26,6 +26,8 @@ const FIREBASE_CONFIG = {
 };
 
 const ADMIN_EMAIL = "anthony.omisade@yahoo.co.uk";
+const ORG_ID = "001-ncc-bermondsey";
+const orgPath = (path) => `orgs/${ORG_ID}/${path}`;
 
 const firebaseApp = initializeApp(FIREBASE_CONFIG);
 const auth = getAuth(firebaseApp);
@@ -786,10 +788,10 @@ function QRDisplay({ child, allChildren, onClose }) {
     if (!scanToken) {
       // Generate and save a new token
       const token = generateScanToken();
-      set(dbRef(db, `children/${tokenHolder.id}/scanToken`), token).then(() => setGenerating(false));
+      set(dbRef(db, orgPath(`children/${tokenHolder.id}/scanToken`)), token).then(() => setGenerating(false));
       // Also save on all siblings so they all know the token
       for (const sib of siblings) {
-        set(dbRef(db, `children/${sib.id}/scanToken`), token);
+        set(dbRef(db, orgPath(`children/${sib.id}/scanToken`)), token);
       }
     }
   }, []);
@@ -1030,9 +1032,9 @@ function QRScanner({ children, attendance, sessionKey, sessionAtt, teacherName, 
     toCheckIn.forEach(child => {
       day[child.id] = { in: stamp, inTeacher: teacherName, out: null, outTeacher: null };
     });
-    await set(dbRef(db, `attendance/${sessionKey}`), day);
+    await set(dbRef(db, orgPath(`attendance/${sessionKey}`)), day);
     for (const child of toCheckIn) {
-      try { await set(dbRef(db, `activityLog/${Date.now() + Math.random()}`), { action: "Check In", childName: child.name, teacher: teacherName, timestamp: Date.now(), time: stamp }); } catch {}
+      try { await set(dbRef(db, orgPath(`activityLog/${Date.now() + Math.random()}`)), { action: "Check In", childName: child.name, teacher: teacherName, timestamp: Date.now(), time: stamp }); } catch {}
     }
     setSuccess(toCheckIn);
     setChecking(false);
@@ -1306,7 +1308,7 @@ function CheckInManager({ children, attendance, sessionKey }) {
   const resetChild = async (child) => {
     setResetting(r => ({ ...r, [child.id]: true }));
     try {
-      await remove(dbRef(db, `attendance/${sessionKey}/${child.id}`));
+      await remove(dbRef(db, orgPath(`attendance/${sessionKey}/${child.id}`)));
       setMsg(`${child.name.split(" ")[0]} reset.`);
       setTimeout(() => setMsg(""), 3000);
     } catch (e) { console.error(e); }
@@ -1315,7 +1317,7 @@ function CheckInManager({ children, attendance, sessionKey }) {
 
   const clearAll = async () => {
     try {
-      await remove(dbRef(db, `attendance/${sessionKey}`));
+      await remove(dbRef(db, orgPath(`attendance/${sessionKey}`)));
       setMsg("All check-ins cleared.");
       setTimeout(() => setMsg(""), 4000);
     } catch (e) { console.error(e); }
@@ -1370,7 +1372,7 @@ function CheckInManager({ children, attendance, sessionKey }) {
                 {isDone && (
                   <button onClick={async () => {
                     setResetting(r => ({ ...r, [child.id]: true }));
-                    await update(dbRef(db, `attendance/${sessionKey}/${child.id}`), { out: null, outTeacher: null, collectedBy: null });
+                    await update(dbRef(db, orgPath(`attendance/${sessionKey}/${child.id}`)), { out: null, outTeacher: null, collectedBy: null });
                     setMsg(`${child.name.split(" ")[0]} back to checked in.`);
                     setTimeout(() => setMsg(""), 3000);
                     setResetting(r => ({ ...r, [child.id]: false }));
@@ -1403,7 +1405,7 @@ function AdminPanel({ currentUser, children = [], attendance = {}, sessionKey = 
   const [success, setSuccess] = useState("");
 
   useEffect(() => {
-    const tRef = dbRef(db, "teachers");
+    const tRef = dbRef(db, orgPath("teachers"));
     const unsub = onValue(tRef, snap => { const data = snap.val(); setTeachers(data ? Object.values(data) : []); });
     return () => unsub();
   }, []);
@@ -1413,7 +1415,7 @@ function AdminPanel({ currentUser, children = [], attendance = {}, sessionKey = 
     setLoading(true); setError(""); setSuccess("");
     try {
       const u = auth.currentUser;
-      await set(dbRef(db, `teachers/${u.uid}`), { uid: u.uid, name: newName, email: u.email });
+      await set(dbRef(db, orgPath(`teachers/${u.uid}`)), { uid: u.uid, name: newName, email: u.email });
       setSuccess(`Registered as ${newName}!`);
       setNewName("");
     } catch (e) { setError(e.message); }
@@ -1431,7 +1433,7 @@ function AdminPanel({ currentUser, children = [], attendance = {}, sessionKey = 
       });
       const data = await res.json();
       if (data.error) { setError(data.error.message === "EMAIL_EXISTS" ? "That email is already registered." : data.error.message); setLoading(false); return; }
-      await set(dbRef(db, `teachers/${data.localId}`), { uid: data.localId, name: newName, email: newEmail });
+      await set(dbRef(db, orgPath(`teachers/${data.localId}`)), { uid: data.localId, name: newName, email: newEmail });
       await sendPasswordResetEmail(auth, newEmail);
       setSuccess(`Invite sent to ${newEmail}!`);
       setNewEmail(""); setNewName("");
@@ -1442,7 +1444,7 @@ function AdminPanel({ currentUser, children = [], attendance = {}, sessionKey = 
   const removeTeacher = async t => {
     if (t.uid === currentUser.uid) { setError("You cannot remove yourself."); return; }
     if (!window.confirm(`Remove ${t.name}?`)) return;
-    await remove(dbRef(db, `teachers/${t.uid}`));
+    await remove(dbRef(db, orgPath(`teachers/${t.uid}`)));
   };
 
   const inp = { width: "100%", border: `1.5px solid ${T.slate200}`, borderRadius: 8, padding: "9px 12px", fontSize: 14, fontFamily: FONT, background: T.white, color: T.slate800, outline: "none", boxSizing: "border-box", marginBottom: 10 };
@@ -1531,7 +1533,7 @@ function LoginScreen() {
       const result = await signInWithPopup(auth, getGoogleProvider());
       const u = result.user;
       // Check if this Google account is a registered teacher
-      const teachersQ = query(dbRef(db, "teachers"), orderByChild("email"), equalTo(u.email));
+      const teachersQ = query(dbRef(db, orgPath("teachers")), orderByChild("email"), equalTo(u.email));
       const snap = await get(teachersQ);
       if (!snap.exists() && u.email !== ADMIN_EMAIL) {
         // Not a registered teacher — sign them back out
@@ -1545,7 +1547,7 @@ function LoginScreen() {
         const teacherKey = Object.keys(snap.val())[0];
         const teacher = snap.val()[teacherKey];
         if (teacher.uid !== u.uid) {
-          await update(dbRef(db, `teachers/${teacherKey}`), { uid: u.uid });
+          await update(dbRef(db, orgPath(`teachers/${teacherKey}`)), { uid: u.uid });
         }
       }
     } catch (e) {
@@ -1948,7 +1950,7 @@ export default function App() {
     const unsub = onAuthStateChanged(auth, async u => {
       setUser(u);
       if (u) {
-        const snap = await get(dbRef(db, `teachers/${u.uid}`));
+        const snap = await get(dbRef(db, orgPath(`teachers/${u.uid}`)));
         setTeacherName(snap.exists() ? snap.val().name : u.email);
         // Scroll to top after login
         window.scrollTo({ top: 0, behavior: "instant" });
@@ -1962,8 +1964,8 @@ export default function App() {
   useEffect(() => {
     if (!user) return;
     setDataLoading(true);
-    const childRef = dbRef(db, "children");
-    const logRef = dbRef(db, "activityLog");
+    const childRef = dbRef(db, orgPath("children"));
+    const logRef = dbRef(db, orgPath("activityLog"));
 
     // Attendance: split into two lightweight listeners instead of one full-history pull.
     //
@@ -1975,8 +1977,8 @@ export default function App() {
     //   1. sessionRef — real-time listener on ONLY today's session key (for live check-in counts)
     //   2. historyRef — one-time fetch of the last 13 Sundays (enough for 12-week chart + 8-week
     //      absence tracking). Not live — stale for the current day, which sessionRef covers.
-    const sessionRef = dbRef(db, `attendance/${dateKey((() => { const d = new Date(); if (d.getDay() !== 0) d.setDate(d.getDate() - d.getDay()); return d; })())}`);
-    const historyQ = query(dbRef(db, "attendance"), orderByKey(), limitToLast(13));
+    const sessionRef = dbRef(db, orgPath(`attendance/${dateKey((() => { const d = new Date(); if (d.getDay() !== 0) d.setDate(d.getDate() - d.getDay()); return d; })())}`));
+    const historyQ = query(dbRef(db, orgPath("attendance")), orderByKey(), limitToLast(13));
 
     const unsubChildren = onValue(childRef, snap => { setChildren(snap.val() ? Object.values(snap.val()) : []); setDataLoading(false); });
 
@@ -1988,7 +1990,6 @@ export default function App() {
     // but we must NOT overwrite that date with {} — it would wipe the history data we
     // loaded below. Only set if snap.val() is non-null, i.e. there's actual data.
     const unsubSession = onValue(sessionRef, snap => {
-      console.log("[LL] session snap for", sessionKey, ":", snap.val() ? Object.keys(snap.val()).length + " records" : "null");
       if (snap.val() !== null) {
         setAttendance(prev => ({ ...prev, [sessionKey]: snap.val() }));
       }
@@ -1998,30 +1999,11 @@ export default function App() {
     // Must resolve before absence badges render — otherwise everyone looks 8wk absent.
     get(historyQ).then(snap => {
       const data = snap.val() || {};
-      console.log("[LL] /attendance keys:", Object.keys(data));
       setAttendance(prev => ({ ...prev, ...data }));
       setHistoryLoaded(true);
     }).catch(err => {
-      console.error("[LL] History fetch failed:", err);
+      console.error("History fetch failed:", err);
       setHistoryLoaded(true);
-    });
-
-    // Probe: look up the user's own org mapping, then read their org's attendance
-    get(dbRef(db, `users/${user.uid}`)).then(snap => {
-      console.log("[LL] users/uid node:", snap.val() ? JSON.stringify(snap.val()) : "null/no access");
-    }).catch(err => console.log("[LL] users/uid failed:", err.message));
-
-    // Also try reading the user's own record to find orgId
-    get(dbRef(db, `teachers/${user.uid}`)).then(snap => {
-      console.log("[LL] teachers/uid node:", snap.val() ? JSON.stringify(snap.val()) : "null");
-    }).catch(err => console.log("[LL] teachers/uid failed:", err.message));
-
-    // Try to list what top-level nodes we have permission to read
-    ["users", "members", "orgs/ncc-bermondsey/children", "orgs/ncc-bermondsey", "children", "attendance"].forEach(path => {
-      get(dbRef(db, path)).then(snap => {
-        const val = snap.val();
-        console.log(`[LL] probe ${path}:`, val ? (typeof val === 'object' ? Object.keys(val).slice(0,5) : val) : "null");
-      }).catch(err => console.log(`[LL] probe ${path}: ERROR ${err.message}`));
     });
 
     // Activity log: server-side limit to 100 — don't download the whole node and slice in JS
@@ -2048,7 +2030,7 @@ export default function App() {
 
   const logActivity = async (action, childName, collectedBy) => {
     const entry = { action, childName, teacher: teacherName, timestamp: Date.now(), time: stampNow(), ...(collectedBy ? { collectedBy } : {}) };
-    await set(dbRef(db, `activityLog/${Date.now()}`), entry);
+    await set(dbRef(db, orgPath(`activityLog/${Date.now()}`)), entry);
   };
 
   const toggleIn = async childId => {
@@ -2061,7 +2043,7 @@ export default function App() {
       day[childId] = { in: stampNow(), inTeacher: teacherName, out: null, outTeacher: null };
     }
     // Save attendance first — always
-    await set(dbRef(db, `attendance/${sessionKey}`), day);
+    await set(dbRef(db, orgPath(`attendance/${sessionKey}`)), day);
     // Log activity separately — don't let it block check-in
     if (isCheckIn) { try { await logActivity("Check In", child?.name); } catch {} }
   };
@@ -2070,21 +2052,21 @@ export default function App() {
     const child = children.find(c => c.id === childId);
     const rec = (attendance[sessionKey] || {})[childId];
     if (!rec) return;
-    await update(dbRef(db, `attendance/${sessionKey}/${childId}`), { out: stampNow(), outTeacher: teacherName, collectedBy: collectorName || null });
+    await update(dbRef(db, orgPath(`attendance/${sessionKey}/${childId}`)), { out: stampNow(), outTeacher: teacherName, collectedBy: collectorName || null });
     try { await logActivity("Check Out", child?.name, collectorName); } catch {}
   };
 
   const addOrUpdateChild = async form => {
     // Always recalculate and store the current age from DOB on save
     const updatedForm = form.dob ? { ...form, age: getAge(form.dob) ?? form.age } : form;
-    await set(dbRef(db, `children/${form.id}`), updatedForm);
+    await set(dbRef(db, orgPath(`children/${form.id}`)), updatedForm);
     // Update siblings bidirectionally
     if (form.siblings?.length) {
       for (const sibId of form.siblings) {
         const sib = children.find(c => c.id === sibId);
         if (sib) {
           const sibSiblings = Array.from(new Set([...(sib.siblings || []), form.id]));
-          await set(dbRef(db, `children/${sibId}/siblings`), sibSiblings);
+          await set(dbRef(db, orgPath(`children/${sibId}/siblings`)), sibSiblings);
         }
       }
     }
@@ -2092,7 +2074,7 @@ export default function App() {
   };
 
   const deleteChild = async id => {
-    await remove(dbRef(db, `children/${id}`));
+    await remove(dbRef(db, orgPath(`children/${id}`)));
     try { await deleteObject(storageRef(storage, `photos/${id}`)); } catch {}
   };
 
