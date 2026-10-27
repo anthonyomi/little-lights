@@ -1178,7 +1178,7 @@ function ChildDetail({ child, onClose, onEdit, onDelete, allChildren, attendance
                 <Badge label={child.gender} bg={child.gender === "Boy" ? T.blueLight : "#FCE7F3"} color={child.gender === "Boy" ? T.blue : "#BE185D"} />
                 <Badge label={`Age ${liveAge(child)}`} bg={T.slate100} color={T.slate600} />
                 {birthday && <Badge label="Birthday this week!" bg="#FEF9C3" color="#854D0E" />}
-                {absent >= 3 && <Badge label={`Absent ${absent} weeks`} bg={T.redLight} color={T.red} />}
+                {historyLoaded && absent >= 3 && <Badge label={`Absent ${absent} weeks`} bg={T.redLight} color={T.red} />}
               </div>
             </div>
           </div>
@@ -1926,6 +1926,7 @@ export default function App() {
   const setTab = (t) => { setTabRaw(t); window.scrollTo({ top: 0, behavior: "instant" }); };
   const [children, setChildren] = useState([]);
   const [attendance, setAttendance] = useState({});
+  const [historyLoaded, setHistoryLoaded] = useState(false);
   const [activityLog, setActivityLog] = useState([]);
   const [search, setSearch] = useState("");
   const [modal, setModal] = useState(null);
@@ -1978,9 +1979,11 @@ export default function App() {
       setAttendance(prev => ({ ...prev, [sessionKey]: snap.val() || {} }));
     });
 
-    // History fetch: one-time, last 13 Sundays (for chart + absence display)
+    // History fetch: one-time, last 13 Sundays (for chart + absence display).
+    // Must resolve before absence badges render — otherwise everyone looks 8wk absent.
     get(historyQ).then(snap => {
       setAttendance(prev => ({ ...prev, ...(snap.val() || {}) }));
+      setHistoryLoaded(true);
     });
 
     // Activity log: server-side limit to 100 — don't download the whole node and slice in JS
@@ -2061,7 +2064,9 @@ export default function App() {
 
   // Alerts
   const birthdays = children.filter(c => isBirthdayThisWeek(c.dob));
-  const absentees = children.filter(c => !c.visitor && weeksAbsent(c.id, attendance, c.enrolled) >= 3);
+  // Only compute absentees once history has loaded — before that, attendance only has
+  // the current session, so every child who wasn't in this week looks 8wk absent.
+  const absentees = historyLoaded ? children.filter(c => !c.visitor && weeksAbsent(c.id, attendance, c.enrolled) >= 3) : [];
 
   // Loading
   if (authLoading) return (
@@ -2451,7 +2456,7 @@ export default function App() {
                             {child.gender && <Badge label={child.gender} bg={child.gender === "Boy" ? T.blueLight : "#FCE7F3"} color={child.gender === "Boy" ? T.blue : "#BE185D"} />}
                             {child.visitor && <Badge label="Visitor" bg="#F5F3FF" color="#7C3AED" />}
                             {birthday && <Badge label="Birthday" bg="#FEF9C3" color="#854D0E" />}
-                            {absent >= 3 && !child.visitor && <Badge label={`${absent}wk absent`} bg={T.redLight} color={T.red} />}
+                            {historyLoaded && absent >= 3 && !child.visitor && <Badge label={`${absent}wk absent`} bg={T.redLight} color={T.red} />}
                             {child.medical && child.medical !== "No known conditions" && <MedicalBadge />}
                           </div>
                           {(child.parent1 || child.parent2) && <div style={{ fontSize: 12, color: T.slate400, marginTop: 8 }}>{[child.parent1, child.parent2].filter(Boolean).join(" · ")}</div>}
