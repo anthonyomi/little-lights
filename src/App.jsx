@@ -2006,17 +2006,18 @@ export default function App() {
       setHistoryLoaded(true);
     });
 
-    // Probe: check if org-based paths exist in the DB
-    get(dbRef(db, "orgs")).then(snap => {
-      if (snap.val()) {
-        console.log("[LL] orgs node keys:", Object.keys(snap.val()));
-        const firstOrg = Object.keys(snap.val())[0];
-        const attKeys = snap.val()[firstOrg]?.attendance ? Object.keys(snap.val()[firstOrg].attendance) : [];
-        console.log("[LL] orgs/" + firstOrg + "/attendance keys:", attKeys);
-      } else {
-        console.log("[LL] no orgs node found");
-      }
-    }).catch(err => console.log("[LL] orgs probe failed:", err.message));
+    // Probe: try known org IDs to find where the real attendance data lives
+    const orgCandidates = ["ncc-bermondsey", "ncc_bermondsey", "littlelights", "little-lights", "default"];
+    Promise.all(orgCandidates.map(orgId =>
+      get(dbRef(db, `orgs/${orgId}/attendance`))
+        .then(snap => ({ orgId, keys: snap.val() ? Object.keys(snap.val()) : null }))
+        .catch(() => ({ orgId, keys: null }))
+    )).then(results => {
+      results.forEach(({ orgId, keys }) => {
+        if (keys) console.log(`[LL] FOUND orgs/${orgId}/attendance: ${keys.length} dates, latest: ${keys.sort().slice(-3)}`);
+        else console.log(`[LL] orgs/${orgId}/attendance: empty or no access`);
+      });
+    });
 
     // Activity log: server-side limit to 100 — don't download the whole node and slice in JS
     const logQ = query(logRef, orderByChild("timestamp"), limitToLast(100));
