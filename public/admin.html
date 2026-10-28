@@ -1,9 +1,1043 @@
 <!doctype html>
-<html>
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="refresh" content="0; url=/" />
-    <title>Little Lights</title>
-  </head>
-  <body></body>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Little Lights — Super Admin</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --purple: #7c3aed;
+      --purple-dark: #6d28d9;
+      --purple-light: #ede9fe;
+      --purple-mid: #8b5cf6;
+      --green: #059669;
+      --green-light: #d1fae5;
+      --red: #dc2626;
+      --red-light: #fee2e2;
+      --amber: #d97706;
+      --amber-light: #fef3c7;
+      --slate900: #0f172a;
+      --slate700: #334155;
+      --slate600: #475569;
+      --slate500: #64748b;
+      --slate400: #94a3b8;
+      --slate200: #e2e8f0;
+      --slate100: #f1f5f9;
+      --slate50: #f8fafc;
+      --white: #ffffff;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+      --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+      --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+      --shadow-lg: 0 10px 15px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.05);
+      --radius: 10px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--slate50);
+      color: var(--slate900);
+      min-height: 100vh;
+    }
+
+    /* ── Auth screen ── */
+    #auth-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 50%, #6d28d9 100%);
+    }
+    .auth-card {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 40px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: var(--shadow-lg);
+    }
+    .auth-logo {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .auth-logo svg { width: 52px; height: 52px; }
+    .auth-logo h1 { font-size: 22px; font-weight: 700; color: var(--slate900); margin-top: 10px; }
+    .auth-logo p { font-size: 13px; color: var(--slate500); margin-top: 4px; }
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-size: 13px; font-weight: 500; color: var(--slate700); margin-bottom: 6px; }
+    .field input {
+      width: 100%; padding: 10px 14px;
+      border: 1.5px solid var(--slate200); border-radius: 8px;
+      font-size: 14px; color: var(--slate900);
+      background: var(--white);
+      outline: none; transition: border-color 0.15s;
+    }
+    .field input:focus { border-color: var(--purple); box-shadow: 0 0 0 3px rgba(124,58,237,0.1); }
+    .btn-primary {
+      width: 100%; padding: 12px;
+      background: var(--purple); color: var(--white);
+      border: none; border-radius: 8px;
+      font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: background 0.15s;
+    }
+    .btn-primary:hover { background: var(--purple-dark); }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+    .error-msg {
+      background: var(--red-light); color: var(--red);
+      border-radius: 8px; padding: 10px 14px;
+      font-size: 13px; margin-bottom: 16px;
+      display: none;
+    }
+
+    /* ── App shell ── */
+    #app-screen { display: none; min-height: 100vh; }
+
+    header {
+      background: var(--white);
+      border-bottom: 1px solid var(--slate200);
+      padding: 0 24px;
+      height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .header-logo { display: flex; align-items: center; gap: 8px; }
+    .header-logo svg { width: 28px; height: 28px; }
+    .header-logo span { font-size: 16px; font-weight: 700; color: var(--slate900); }
+    .badge-admin {
+      background: var(--purple-light); color: var(--purple);
+      font-size: 11px; font-weight: 600;
+      padding: 2px 8px; border-radius: 20px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .header-right { display: flex; align-items: center; gap: 12px; }
+    .user-info { font-size: 13px; color: var(--slate600); }
+    .btn-ghost {
+      padding: 7px 14px;
+      background: transparent; border: 1.5px solid var(--slate200);
+      border-radius: 8px; font-size: 13px; font-weight: 500;
+      color: var(--slate700); cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-ghost:hover { background: var(--slate100); border-color: var(--slate300); }
+
+    main { padding: 28px 24px; max-width: 1100px; margin: 0 auto; }
+
+    /* ── View management ── */
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* ── Orgs list view ── */
+    .page-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .page-title { font-size: 22px; font-weight: 700; color: var(--slate900); }
+    .page-subtitle { font-size: 14px; color: var(--slate500); margin-top: 2px; }
+
+    .btn-sm {
+      padding: 8px 16px;
+      border-radius: 8px; font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: all 0.15s; border: none;
+    }
+    .btn-sm.primary { background: var(--purple); color: var(--white); }
+    .btn-sm.primary:hover { background: var(--purple-dark); }
+    .btn-sm.secondary { background: var(--white); color: var(--slate700); border: 1.5px solid var(--slate200); }
+    .btn-sm.secondary:hover { background: var(--slate100); }
+    .btn-sm.danger { background: var(--red-light); color: var(--red); }
+    .btn-sm.danger:hover { background: #fecaca; }
+    .btn-sm.success { background: var(--green-light); color: var(--green); }
+    .btn-sm.success:hover { background: #a7f3d0; }
+
+    .stats-row {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px; margin-bottom: 28px;
+    }
+    .stat-card {
+      background: var(--white); border-radius: var(--radius);
+      padding: 20px; box-shadow: var(--shadow);
+    }
+    .stat-card .label { font-size: 12px; font-weight: 500; color: var(--slate500); text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-card .value { font-size: 28px; font-weight: 700; color: var(--slate900); margin-top: 4px; }
+    .stat-card .sub { font-size: 12px; color: var(--slate400); margin-top: 2px; }
+
+    .card {
+      background: var(--white); border-radius: var(--radius);
+      box-shadow: var(--shadow); overflow: hidden;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      text-align: left; font-size: 12px; font-weight: 600;
+      color: var(--slate500); text-transform: uppercase; letter-spacing: 0.5px;
+      padding: 12px 16px; border-bottom: 1px solid var(--slate200);
+      background: var(--slate50);
+    }
+    tbody tr { border-bottom: 1px solid var(--slate100); }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--slate50); }
+    tbody td { padding: 14px 16px; font-size: 14px; color: var(--slate700); vertical-align: middle; }
+    tbody td .org-name { font-weight: 600; color: var(--slate900); }
+    tbody td .org-id { font-size: 11px; color: var(--slate400); font-family: monospace; }
+
+    .pill {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; font-weight: 600;
+      padding: 3px 8px; border-radius: 20px;
+    }
+    .pill.green { background: var(--green-light); color: var(--green); }
+    .pill.red { background: var(--red-light); color: var(--red); }
+    .pill.amber { background: var(--amber-light); color: var(--amber); }
+    .pill.purple { background: var(--purple-light); color: var(--purple); }
+    .pill.slate { background: var(--slate100); color: var(--slate600); }
+
+    .actions { display: flex; gap: 8px; align-items: center; }
+
+    /* ── Org detail view ── */
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 13px; color: var(--slate500); cursor: pointer;
+      margin-bottom: 20px; background: none; border: none;
+      padding: 0; transition: color 0.15s;
+    }
+    .back-btn:hover { color: var(--purple); }
+    .back-btn svg { width: 16px; height: 16px; }
+
+    .tabs {
+      display: flex; gap: 4px; margin-bottom: 24px;
+      border-bottom: 2px solid var(--slate200); padding-bottom: 0;
+    }
+    .tab {
+      padding: 10px 18px; font-size: 14px; font-weight: 500;
+      color: var(--slate500); cursor: pointer; border: none;
+      background: none; border-bottom: 2px solid transparent;
+      margin-bottom: -2px; transition: all 0.15s;
+    }
+    .tab.active { color: var(--purple); border-bottom-color: var(--purple); }
+    .tab:hover:not(.active) { color: var(--slate700); }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .children-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px;
+    }
+    .child-card {
+      background: var(--white); border-radius: var(--radius);
+      padding: 16px; box-shadow: var(--shadow);
+      display: flex; align-items: center; gap: 12px;
+    }
+    .child-avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; font-weight: 700; color: var(--white);
+      flex-shrink: 0;
+    }
+    .child-info .name { font-size: 14px; font-weight: 600; color: var(--slate900); }
+    .child-info .meta { font-size: 12px; color: var(--slate500); margin-top: 2px; }
+
+    .teacher-list { display: flex; flex-direction: column; gap: 12px; }
+    .teacher-row {
+      background: var(--white); border-radius: var(--radius);
+      padding: 16px 20px; box-shadow: var(--shadow);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .teacher-info .name { font-size: 14px; font-weight: 600; color: var(--slate900); }
+    .teacher-info .email { font-size: 12px; color: var(--slate500); margin-top: 2px; }
+
+    /* ── Create org modal ── */
+    .overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: none; align-items: center; justify-content: center;
+      z-index: 1000;
+    }
+    .overlay.open { display: flex; }
+    .modal {
+      background: var(--white); border-radius: 16px;
+      padding: 32px; width: 100%; max-width: 480px;
+      box-shadow: var(--shadow-lg); margin: 16px;
+    }
+    .modal h2 { font-size: 18px; font-weight: 700; color: var(--slate900); margin-bottom: 20px; }
+    .modal .actions-row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
+
+    /* ── Loading / empty states ── */
+    .loading-spinner {
+      display: flex; align-items: center; justify-content: center;
+      padding: 48px; color: var(--slate400); flex-direction: column; gap: 12px;
+    }
+    .spinner {
+      width: 32px; height: 32px; border: 3px solid var(--slate200);
+      border-top-color: var(--purple); border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .empty-state {
+      text-align: center; padding: 48px 24px; color: var(--slate400);
+    }
+    .empty-state p { font-size: 14px; margin-top: 8px; }
+
+    /* ── Attendance mini-calendar ── */
+    .attendance-list { display: flex; flex-direction: column; gap: 8px; }
+    .att-row {
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--white); border-radius: 8px;
+      padding: 12px 16px; box-shadow: var(--shadow);
+    }
+    .att-date { font-size: 14px; font-weight: 500; color: var(--slate700); }
+    .att-count {
+      font-size: 13px; font-weight: 600; color: var(--purple);
+      background: var(--purple-light); padding: 2px 10px; border-radius: 20px;
+    }
+
+    .section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .section-title { font-size: 16px; font-weight: 600; color: var(--slate900); }
+
+    .toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: var(--slate900); color: var(--white);
+      padding: 12px 20px; border-radius: 10px;
+      font-size: 13px; font-weight: 500;
+      box-shadow: var(--shadow-lg); z-index: 2000;
+      transform: translateY(80px); opacity: 0;
+      transition: all 0.25s; pointer-events: none;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.green { background: var(--green); }
+    .toast.red { background: var(--red); }
+
+    .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 640px) { .input-row { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<!-- ── Auth Screen ── -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="26" cy="26" r="26" fill="#7c3aed"/>
+        <path d="M26 10 L32 22 L26 18 L20 22 Z" fill="white" opacity="0.9"/>
+        <circle cx="26" cy="30" r="8" fill="white" opacity="0.95"/>
+        <path d="M26 22 L30 30 L26 28 L22 30 Z" fill="#7c3aed" opacity="0.7"/>
+      </svg>
+      <h1>Little Lights</h1>
+      <p>Super Admin Portal</p>
+    </div>
+    <div id="auth-error" class="error-msg"></div>
+    <div class="field">
+      <label>Email address</label>
+      <input type="email" id="email-input" placeholder="admin@example.com" autocomplete="email" />
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="password-input" placeholder="••••••••" autocomplete="current-password" />
+    </div>
+    <button class="btn-primary" id="sign-in-btn">Sign in</button>
+  </div>
+</div>
+
+<!-- ── App Screen ── -->
+<div id="app-screen">
+  <header>
+    <div class="header-left">
+      <div class="header-logo">
+        <svg viewBox="0 0 28 28" fill="none">
+          <circle cx="14" cy="14" r="14" fill="#7c3aed"/>
+          <path d="M14 5 L17 11 L14 9 L11 11 Z" fill="white" opacity="0.9"/>
+          <circle cx="14" cy="17" r="5" fill="white" opacity="0.95"/>
+        </svg>
+        <span>Little Lights</span>
+      </div>
+      <span class="badge-admin">Super Admin</span>
+    </div>
+    <div class="header-right">
+      <span class="user-info" id="user-email-display"></span>
+      <button class="btn-ghost" id="sign-out-btn">Sign out</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Orgs List View -->
+    <div class="view active" id="view-orgs">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Organisations</div>
+          <div class="page-subtitle" id="orgs-subtitle">Loading…</div>
+        </div>
+        <button class="btn-sm primary" id="create-org-btn">+ New Organisation</button>
+      </div>
+      <div class="stats-row" id="global-stats">
+        <div class="stat-card">
+          <div class="label">Total Orgs</div>
+          <div class="value" id="stat-orgs">—</div>
+          <div class="sub">organisations</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Total Children</div>
+          <div class="value" id="stat-children">—</div>
+          <div class="sub">registered</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Total Teachers</div>
+          <div class="value" id="stat-teachers">—</div>
+          <div class="sub">across all orgs</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Last Sunday</div>
+          <div class="value" id="stat-attendance">—</div>
+          <div class="sub">total check-ins</div>
+        </div>
+      </div>
+      <div class="card">
+        <div id="orgs-table-container">
+          <div class="loading-spinner"><div class="spinner"></div><span>Loading organisations…</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Org Detail View -->
+    <div class="view" id="view-org-detail">
+      <button class="back-btn" id="back-to-orgs">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M10 3L5 8l5 5"/>
+        </svg>
+        All Organisations
+      </button>
+      <div class="page-header">
+        <div>
+          <div class="page-title" id="detail-org-name">—</div>
+          <div class="page-subtitle" id="detail-org-id" style="font-family:monospace;font-size:12px;"></div>
+        </div>
+        <div class="actions" id="detail-header-actions"></div>
+      </div>
+      <div class="tabs">
+        <button class="tab active" data-tab="children">Children</button>
+        <button class="tab" data-tab="teachers">Teachers</button>
+        <button class="tab" data-tab="attendance">Attendance</button>
+      </div>
+      <div class="tab-panel active" id="tab-children">
+        <div class="loading-spinner"><div class="spinner"></div></div>
+      </div>
+      <div class="tab-panel" id="tab-teachers">
+        <div class="loading-spinner"><div class="spinner"></div></div>
+      </div>
+      <div class="tab-panel" id="tab-attendance">
+        <div class="loading-spinner"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ── Create Org Modal ── -->
+<div class="overlay" id="create-org-overlay">
+  <div class="modal">
+    <h2>Create New Organisation</h2>
+    <div id="create-org-error" class="error-msg"></div>
+    <div class="field">
+      <label>Organisation Name</label>
+      <input type="text" id="new-org-name" placeholder="e.g. NCC Bermondsey" />
+    </div>
+    <div class="input-row">
+      <div class="field">
+        <label>City / Location</label>
+        <input type="text" id="new-org-city" placeholder="e.g. London" />
+      </div>
+      <div class="field">
+        <label>Contact Email</label>
+        <input type="email" id="new-org-email" placeholder="pastor@church.com" />
+      </div>
+    </div>
+    <div class="actions-row">
+      <button class="btn-sm secondary" id="cancel-create-org">Cancel</button>
+      <button class="btn-sm primary" id="confirm-create-org">Create Organisation</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Add Teacher Modal ── -->
+<div class="overlay" id="add-teacher-overlay">
+  <div class="modal">
+    <h2>Add Teacher</h2>
+    <div id="add-teacher-error" class="error-msg"></div>
+    <div class="field">
+      <label>Full Name</label>
+      <input type="text" id="new-teacher-name" placeholder="Jane Smith" />
+    </div>
+    <div class="field">
+      <label>Email Address</label>
+      <input type="email" id="new-teacher-email" placeholder="teacher@church.com" />
+    </div>
+    <div class="field">
+      <label>Temporary Password</label>
+      <input type="text" id="new-teacher-password" placeholder="Min. 6 characters" />
+    </div>
+    <div class="actions-row">
+      <button class="btn-sm secondary" id="cancel-add-teacher">Cancel</button>
+      <button class="btn-sm primary" id="confirm-add-teacher">Add Teacher</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  getDatabase, ref, get, set, update, remove, query, orderByKey, limitToLast
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+// ── Config ──
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCM5yrkzuDeX1Fhz8R3NJ18PuzbA7IK8CM",
+  authDomain: "little-lights-church.firebaseapp.com",
+  databaseURL: "https://little-lights-church-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "little-lights-church",
+  storageBucket: "little-lights-church.firebasestorage.app",
+  messagingSenderId: "327380416801",
+  appId: "1:327380416801:web:a95833df74f9d473e36660",
+};
+
+const app = initializeApp(FIREBASE_CONFIG);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+// ── State ──
+let currentUser = null;
+let orgsCache = {};
+let currentOrgId = null;
+let currentOrgData = { children: {}, teachers: {}, attendance: {} };
+let orgDetailLoaded = { children: false, teachers: false, attendance: false };
+
+// ── Helpers ──
+const $ = (id) => document.getElementById(id);
+const orgPath = (orgId, path) => `orgs/${orgId}/${path}`;
+
+function showToast(msg, type = "") {
+  const t = $("toast");
+  t.textContent = msg;
+  t.className = "toast" + (type ? " " + type : "");
+  void t.offsetWidth;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 3000);
+}
+
+function fmtDate(dateStr) {
+  if (!dateStr) return "—";
+  const [y, m, d] = dateStr.split("-");
+  return new Date(+y, +m - 1, +d).toLocaleDateString("en-GB", {
+    day: "numeric", month: "short", year: "numeric"
+  });
+}
+
+const AVATAR_COLORS = ["#7c3aed","#2563eb","#059669","#d97706","#dc2626","#0891b2","#7c3aed","#db2777"];
+function avatarColor(name) {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xffffffff;
+  return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length];
+}
+function initials(name) {
+  const parts = (name || "?").trim().split(/\s+/);
+  return parts.length === 1 ? parts[0][0].toUpperCase()
+    : (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+// ── View switching ──
+function showView(id) {
+  document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+  $(id).classList.add("active");
+}
+
+// ── Auth ──
+async function checkSuperAdmin(user) {
+  // Check superAdmin node (top-level)
+  const snap = await get(ref(db, `superAdmin/${user.uid}`));
+  if (snap.exists() && snap.val()) return true;
+  // Fallback: check if email matches known admin
+  const emailSnap = await get(ref(db, "superAdmin"));
+  if (emailSnap.exists()) {
+    const data = emailSnap.val();
+    // Check if it's email-keyed or uid-keyed
+    if (typeof data === "object") {
+      const vals = Object.values(data);
+      if (vals.some(v => typeof v === "object" && v.email === user.email)) return true;
+      if (data[user.email] || data[user.uid]) return true;
+    }
+  }
+  return false;
+}
+
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    const isAdmin = await checkSuperAdmin(user);
+    if (!isAdmin) {
+      showError("auth-error", "Access denied. This portal is for super admins only.");
+      $("sign-in-btn").disabled = false;
+      await signOut(auth);
+      return;
+    }
+    currentUser = user;
+    $("auth-screen").style.display = "none";
+    $("app-screen").style.display = "block";
+    $("user-email-display").textContent = user.email;
+    loadOrgs();
+  } else {
+    currentUser = null;
+    $("auth-screen").style.display = "flex";
+    $("app-screen").style.display = "none";
+  }
+});
+
+function showError(id, msg) {
+  const el = $(id);
+  el.textContent = msg;
+  el.style.display = "block";
+}
+function hideError(id) { $(id).style.display = "none"; }
+
+$("sign-in-btn").addEventListener("click", async () => {
+  const email = $("email-input").value.trim();
+  const password = $("password-input").value;
+  hideError("auth-error");
+  if (!email || !password) { showError("auth-error", "Please enter your email and password."); return; }
+  $("sign-in-btn").disabled = true;
+  $("sign-in-btn").textContent = "Signing in…";
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+  } catch (e) {
+    showError("auth-error", e.code === "auth/invalid-credential"
+      ? "Invalid email or password." : e.message);
+    $("sign-in-btn").disabled = false;
+    $("sign-in-btn").textContent = "Sign in";
+  }
+});
+$("password-input").addEventListener("keydown", e => { if (e.key === "Enter") $("sign-in-btn").click(); });
+
+$("sign-out-btn").addEventListener("click", () => signOut(auth));
+
+// ── Load all orgs ──
+async function loadOrgs() {
+  const snap = await get(ref(db, "orgs"));
+  orgsCache = snap.val() || {};
+  renderOrgsTable();
+  computeGlobalStats();
+}
+
+function computeGlobalStats() {
+  const orgIds = Object.keys(orgsCache);
+  let totalChildren = 0, totalTeachers = 0, lastSundayTotal = 0;
+  let lastSunday = "";
+  for (const id of orgIds) {
+    const org = orgsCache[id];
+    totalChildren += Object.keys(org.children || {}).length;
+    totalTeachers += Object.keys(org.teachers || {}).length;
+    // Last sunday across all orgs
+    if (org.attendance) {
+      const dates = Object.keys(org.attendance).sort();
+      if (dates.length) {
+        const latest = dates[dates.length - 1];
+        if (!lastSunday || latest > lastSunday) lastSunday = latest;
+        const sess = org.attendance[latest];
+        lastSundayTotal += Object.values(sess || {}).filter(v => v === "in" || (typeof v === "object" && v.status === "in")).length;
+      }
+    }
+  }
+  $("stat-orgs").textContent = orgIds.length;
+  $("stat-children").textContent = totalChildren;
+  $("stat-teachers").textContent = totalTeachers;
+  $("stat-attendance").textContent = lastSundayTotal || "—";
+  $("orgs-subtitle").textContent = `${orgIds.length} organisation${orgIds.length !== 1 ? "s" : ""} registered`;
+}
+
+function renderOrgsTable() {
+  const orgIds = Object.keys(orgsCache);
+  if (!orgIds.length) {
+    $("orgs-table-container").innerHTML = `
+      <div class="empty-state">
+        <p>No organisations found in the database.</p>
+      </div>`;
+    return;
+  }
+  const rows = orgIds.map(id => {
+    const org = orgsCache[id];
+    const children = Object.keys(org.children || {}).length;
+    const teachers = Object.keys(org.teachers || {}).length;
+    const name = org.config?.name || org.name || id;
+    const status = org.config?.active !== false ? "active" : "inactive";
+    const lastSeen = org.attendance
+      ? Object.keys(org.attendance).sort().pop()
+      : null;
+    return `
+      <tr>
+        <td>
+          <div class="org-name">${escHtml(name)}</div>
+          <div class="org-id">${escHtml(id)}</div>
+        </td>
+        <td>${children}</td>
+        <td>${teachers}</td>
+        <td>${lastSeen ? fmtDate(lastSeen) : '<span style="color:var(--slate400)">Never</span>'}</td>
+        <td><span class="pill ${status === "active" ? "green" : "red"}">${status}</span></td>
+        <td>
+          <div class="actions">
+            <button class="btn-sm secondary" onclick="viewOrg('${escAttr(id)}')">View</button>
+          </div>
+        </td>
+      </tr>`;
+  }).join("");
+
+  $("orgs-table-container").innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Organisation</th>
+          <th>Children</th>
+          <th>Teachers</th>
+          <th>Last Session</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+// ── Org detail ──
+window.viewOrg = function(orgId) {
+  currentOrgId = orgId;
+  currentOrgData = orgsCache[orgId] || {};
+  orgDetailLoaded = { children: false, teachers: false, attendance: false };
+
+  const name = currentOrgData.config?.name || currentOrgData.name || orgId;
+  $("detail-org-name").textContent = name;
+  $("detail-org-id").textContent = `ID: ${orgId}`;
+
+  // Active/deactivate org button
+  const isActive = currentOrgData.config?.active !== false;
+  $("detail-header-actions").innerHTML = `
+    <button class="btn-sm ${isActive ? "danger" : "success"}" id="toggle-org-btn">
+      ${isActive ? "Deactivate Org" : "Activate Org"}
+    </button>`;
+  $("toggle-org-btn").addEventListener("click", () => toggleOrg(orgId, !isActive));
+
+  // Reset tabs
+  document.querySelectorAll(".tab").forEach((t, i) => t.classList.toggle("active", i === 0));
+  document.querySelectorAll(".tab-panel").forEach((p, i) => {
+    p.classList.toggle("active", i === 0);
+    p.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
+  });
+
+  showView("view-org-detail");
+  loadOrgTab("children");
+};
+
+// Tab switching
+document.querySelectorAll(".tab").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const tab = btn.dataset.tab;
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    btn.classList.add("active");
+    document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+    $("tab-" + tab).classList.add("active");
+    if (!orgDetailLoaded[tab]) loadOrgTab(tab);
+  });
+});
+
+async function loadOrgTab(tab) {
+  if (!currentOrgId) return;
+  orgDetailLoaded[tab] = true;
+
+  if (tab === "children") {
+    const snap = await get(ref(db, orgPath(currentOrgId, "children")));
+    const children = snap.val() || {};
+    currentOrgData.children = children;
+    renderChildrenTab(children);
+  } else if (tab === "teachers") {
+    const snap = await get(ref(db, orgPath(currentOrgId, "teachers")));
+    const teachers = snap.val() || {};
+    currentOrgData.teachers = teachers;
+    renderTeachersTab(teachers);
+  } else if (tab === "attendance") {
+    const q = query(ref(db, orgPath(currentOrgId, "attendance")), orderByKey(), limitToLast(20));
+    const snap = await get(q);
+    const att = snap.val() || {};
+    currentOrgData.attendance = att;
+    renderAttendanceTab(att);
+  }
+}
+
+function renderChildrenTab(children) {
+  const entries = Object.entries(children);
+  if (!entries.length) {
+    $("tab-children").innerHTML = '<div class="empty-state"><p>No children registered in this organisation.</p></div>';
+    return;
+  }
+  const sorted = entries.sort(([, a], [, b]) =>
+    (a.name || "").localeCompare(b.name || ""));
+
+  const cards = sorted.map(([id, c]) => {
+    const color = avatarColor(c.name || id);
+    const age = c.dob ? calcAge(c.dob) : "?";
+    return `
+      <div class="child-card">
+        <div class="child-avatar" style="background:${color}">${initials(c.name || "?")}</div>
+        <div class="child-info">
+          <div class="name">${escHtml(c.name || "Unknown")}</div>
+          <div class="meta">${age} yrs · ${escHtml(c.gender || "—")}${c.visitor ? ' · <span style="color:var(--amber)">Visitor</span>' : ""}</div>
+        </div>
+      </div>`;
+  }).join("");
+
+  $("tab-children").innerHTML = `
+    <div class="section-header">
+      <div class="section-title">${entries.length} children registered</div>
+    </div>
+    <div class="children-grid">${cards}</div>`;
+}
+
+function renderTeachersTab(teachers) {
+  const panel = $("tab-teachers");
+  const entries = Object.entries(teachers);
+
+  const addBtn = `
+    <div class="section-header">
+      <div class="section-title">${entries.length} teacher${entries.length !== 1 ? "s" : ""}</div>
+      <button class="btn-sm primary" onclick="openAddTeacher()">+ Add Teacher</button>
+    </div>`;
+
+  if (!entries.length) {
+    panel.innerHTML = addBtn + '<div class="empty-state"><p>No teachers in this organisation yet.</p></div>';
+    return;
+  }
+
+  const rows = entries.map(([uid, t]) => {
+    const active = t.active !== false;
+    return `
+      <div class="teacher-row">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div class="child-avatar" style="background:${avatarColor(t.name || uid)};width:40px;height:40px;font-size:14px">
+            ${initials(t.name || "?")}
+          </div>
+          <div class="teacher-info">
+            <div class="name">${escHtml(t.name || "Unknown")}</div>
+            <div class="email">${escHtml(t.email || uid)}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span class="pill ${active ? "green" : "red"}">${active ? "Active" : "Deactivated"}</span>
+          <button class="btn-sm ${active ? "danger" : "success"}"
+            onclick="toggleTeacher('${escAttr(uid)}', ${!active})">
+            ${active ? "Deactivate" : "Activate"}
+          </button>
+        </div>
+      </div>`;
+  }).join("");
+
+  panel.innerHTML = addBtn + `<div class="teacher-list">${rows}</div>`;
+}
+
+function renderAttendanceTab(att) {
+  const entries = Object.entries(att).sort(([a], [b]) => b.localeCompare(a));
+  if (!entries.length) {
+    $("tab-attendance").innerHTML = '<div class="empty-state"><p>No attendance records yet.</p></div>';
+    return;
+  }
+  const rows = entries.map(([date, sess]) => {
+    const checkedIn = Object.values(sess || {}).filter(v =>
+      v === "in" || (typeof v === "object" && v.status === "in")).length;
+    return `
+      <div class="att-row">
+        <div class="att-date">${fmtDate(date)}</div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="font-size:13px;color:var(--slate500)">${Object.keys(sess || {}).length} records</span>
+          <span class="att-count">${checkedIn} checked in</span>
+        </div>
+      </div>`;
+  }).join("");
+
+  $("tab-attendance").innerHTML = `
+    <div class="section-header">
+      <div class="section-title">${entries.length} sessions recorded</div>
+    </div>
+    <div class="attendance-list">${rows}</div>`;
+}
+
+// ── Toggle org active ──
+async function toggleOrg(orgId, active) {
+  try {
+    await update(ref(db, `orgs/${orgId}/config`), { active });
+    if (orgsCache[orgId]) {
+      if (!orgsCache[orgId].config) orgsCache[orgId].config = {};
+      orgsCache[orgId].config.active = active;
+    }
+    showToast(`Organisation ${active ? "activated" : "deactivated"}`, active ? "green" : "red");
+    const isActive = active;
+    $("detail-header-actions").innerHTML = `
+      <button class="btn-sm ${isActive ? "danger" : "success"}" id="toggle-org-btn">
+        ${isActive ? "Deactivate Org" : "Activate Org"}
+      </button>`;
+    $("toggle-org-btn").addEventListener("click", () => toggleOrg(orgId, !isActive));
+  } catch (e) {
+    showToast("Error: " + e.message, "red");
+  }
+}
+
+// ── Toggle teacher ──
+window.toggleTeacher = async function(uid, active) {
+  if (!currentOrgId) return;
+  try {
+    await update(ref(db, orgPath(currentOrgId, `teachers/${uid}`)), { active });
+    if (currentOrgData.teachers?.[uid]) {
+      currentOrgData.teachers[uid].active = active;
+    }
+    showToast(`Teacher ${active ? "activated" : "deactivated"}`, active ? "green" : "red");
+    renderTeachersTab(currentOrgData.teachers || {});
+  } catch (e) {
+    showToast("Error: " + e.message, "red");
+  }
+};
+
+// ── Add teacher ──
+window.openAddTeacher = function() {
+  $("new-teacher-name").value = "";
+  $("new-teacher-email").value = "";
+  $("new-teacher-password").value = "";
+  hideError("add-teacher-error");
+  $("add-teacher-overlay").classList.add("open");
+};
+$("cancel-add-teacher").addEventListener("click", () => {
+  $("add-teacher-overlay").classList.remove("open");
+});
+
+$("confirm-add-teacher").addEventListener("click", async () => {
+  const name = $("new-teacher-name").value.trim();
+  const email = $("new-teacher-email").value.trim();
+  const password = $("new-teacher-password").value;
+  hideError("add-teacher-error");
+
+  if (!name || !email || !password) {
+    showError("add-teacher-error", "All fields are required."); return;
+  }
+  if (password.length < 6) {
+    showError("add-teacher-error", "Password must be at least 6 characters."); return;
+  }
+
+  $("confirm-add-teacher").disabled = true;
+  $("confirm-add-teacher").textContent = "Creating…";
+
+  try {
+    // Create Firebase Auth user via REST API
+    const res = await fetch(
+      `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FIREBASE_CONFIG.apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, returnSecureToken: true })
+      }
+    );
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error?.message || "Failed to create account");
+
+    const uid = data.localId;
+    // Write teacher record in org
+    await set(ref(db, orgPath(currentOrgId, `teachers/${uid}`)), {
+      name, email, active: true, createdAt: Date.now()
+    });
+
+    if (!currentOrgData.teachers) currentOrgData.teachers = {};
+    currentOrgData.teachers[uid] = { name, email, active: true };
+
+    $("add-teacher-overlay").classList.remove("open");
+    showToast("Teacher added successfully", "green");
+    renderTeachersTab(currentOrgData.teachers);
+  } catch (e) {
+    showError("add-teacher-error", e.message);
+  } finally {
+    $("confirm-add-teacher").disabled = false;
+    $("confirm-add-teacher").textContent = "Add Teacher";
+  }
+});
+
+// ── Create org ──
+$("create-org-btn").addEventListener("click", () => {
+  $("new-org-name").value = "";
+  $("new-org-city").value = "";
+  $("new-org-email").value = "";
+  hideError("create-org-error");
+  $("create-org-overlay").classList.add("open");
+});
+$("cancel-create-org").addEventListener("click", () => {
+  $("create-org-overlay").classList.remove("open");
+});
+
+$("confirm-create-org").addEventListener("click", async () => {
+  const name = $("new-org-name").value.trim();
+  const city = $("new-org-city").value.trim();
+  const email = $("new-org-email").value.trim();
+  hideError("create-org-error");
+
+  if (!name) { showError("create-org-error", "Organisation name is required."); return; }
+
+  $("confirm-create-org").disabled = true;
+  $("confirm-create-org").textContent = "Creating…";
+
+  try {
+    const slug = name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+    const orgId = `org${Date.now()}${slug.slice(0, 8)}`;
+    const orgData = {
+      config: {
+        name, city: city || null, contactEmail: email || null,
+        active: true, createdAt: Date.now()
+      }
+    };
+    await set(ref(db, `orgs/${orgId}`), orgData);
+    orgsCache[orgId] = orgData;
+
+    $("create-org-overlay").classList.remove("open");
+    showToast(`"${name}" created successfully`, "green");
+    renderOrgsTable();
+    computeGlobalStats();
+  } catch (e) {
+    showError("create-org-error", e.message);
+  } finally {
+    $("confirm-create-org").disabled = false;
+    $("confirm-create-org").textContent = "Create Organisation";
+  }
+});
+
+// ── Back button ──
+$("back-to-orgs").addEventListener("click", () => {
+  currentOrgId = null;
+  showView("view-orgs");
+  loadOrgs(); // refresh stats
+});
+
+// ── Utils ──
+function escHtml(s) {
+  return String(s ?? "")
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+function escAttr(s) {
+  return String(s ?? "").replace(/'/g, "\\'");
+}
+function calcAge(dob) {
+  if (!dob) return "?";
+  const d = new Date(dob);
+  const now = new Date();
+  let age = now.getFullYear() - d.getFullYear();
+  if (now.getMonth() < d.getMonth() || (now.getMonth() === d.getMonth() && now.getDate() < d.getDate())) age--;
+  return age;
+}
+</script>
+</body>
 </html>

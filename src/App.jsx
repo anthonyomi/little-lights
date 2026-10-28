@@ -1903,6 +1903,11 @@ function Sidebar({ tab, setTab, teacherName, onSignOut, isAdmin, mobile, onClose
               <Icon name="settings" size={16} color={tab === "admin" ? "#fff" : T.slate500} />
               Admin
             </button>
+            <a href="/admin" target="_blank" rel="noopener noreferrer"
+              style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 12px", borderRadius: 8, border: "none", background: "transparent", color: T.slate400, cursor: "pointer", fontSize: 14, fontFamily: FONT, fontWeight: 400, textAlign: "left", textDecoration: "none", transition: "all .15s" }}>
+              <Icon name="share" size={16} color={T.slate500} />
+              Super Admin Portal ↗
+            </a>
           </>
         )}
       </nav>
