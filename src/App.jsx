@@ -2140,6 +2140,7 @@ export default function App() {
     }
     @media (max-width: 900px) {
       .checkin-stats { grid-template-columns: repeat(2, 1fr) !important; }
+        .children-stats { grid-template-columns: repeat(2, 1fr) !important; }
     }
     /* Prevent horizontal overflow on mobile */
     @media (max-width: 480px) {
@@ -2521,60 +2522,100 @@ export default function App() {
           {/* ── CHILDREN ─────────────────────────────────────────────────────── */}
           {tab === "children" && (
             <div>
-              <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
-                <div style={{ position: "relative", flex: 1 }}>
-                  <div style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }}><Icon name="search" size={16} color={T.slate400} /></div>
-                  <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search children…"
-                    style={{ width: "100%", padding: "10px 12px 10px 38px", border: `1.5px solid ${T.slate200}`, borderRadius: 10, fontSize: 14, fontFamily: FONT, background: T.white, outline: "none" }} />
-                </div>
-                <Btn onClick={() => setModal({ type: "add" })}><Icon name="plus" size={14} />Add Child</Btn>
-              </div>
-              {/* Filter pills */}
+              {/* ── Summary stats ── */}
               {(() => {
-                const pill = (label, active, onClick) => (
-                  <button key={label} onClick={onClick} style={{ padding: "6px 14px", borderRadius: 20, border: `1.5px solid ${active ? T.teal : T.slate200}`, background: active ? T.teal : T.white, color: active ? "white" : T.slate600, fontSize: 13, fontWeight: active ? 600 : 400, cursor: "pointer", fontFamily: FONT, transition: "all .15s", whiteSpace: "nowrap" }}>{label}</button>
-                );
-                const hasFilters = childFilter.group !== "all" || childFilter.gender !== "all" || childFilter.visitor;
+                const total = children.length;
+                const nurseryCount = children.filter(c => liveAge(c) <= 5).length;
+                const juniorsCount = children.filter(c => liveAge(c) >= 6).length;
+                const visitorsCount = children.filter(c => c.visitor).length;
+                const stats = [
+                  { label: "Total Registered", value: total, icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z", iconBg: "#1A2744", iconColor: "#fff" },
+                  { label: "Nursery (0–5)", value: nurseryCount, icon: "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z", iconBg: "#7C3AED", iconColor: "#fff" },
+                  { label: "Juniors (6–11)", value: juniorsCount, icon: "M13 10V3L4 14h7v7l9-11h-7z", iconBg: "#059669", iconColor: "#fff" },
+                  { label: "Visitors", value: visitorsCount, icon: "M15 9a2 2 0 10-4 0v5a2 2 0 01-2 2h6m-6-4h4m8 0a9 9 0 11-18 0 9 9 0 0118 0z", iconBg: "#F59E0B", iconColor: "#fff" },
+                ];
                 return (
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16, alignItems: "center" }}>
-                    {pill("Nursery (0–5)", childFilter.group === "nursery", () => setChildFilter(f => ({ ...f, group: f.group === "nursery" ? "all" : "nursery" })))}
-                    {pill("Juniors (6–11)", childFilter.group === "juniors", () => setChildFilter(f => ({ ...f, group: f.group === "juniors" ? "all" : "juniors" })))}
-                    <div style={{ width: 1, height: 24, background: T.slate200 }} />
-                    {pill("Boys", childFilter.gender === "boy", () => setChildFilter(f => ({ ...f, gender: f.gender === "boy" ? "all" : "boy" })))}
-                    {pill("Girls", childFilter.gender === "girl", () => setChildFilter(f => ({ ...f, gender: f.gender === "girl" ? "all" : "girl" })))}
-                    <div style={{ width: 1, height: 24, background: T.slate200 }} />
-                    {pill("Visitors", childFilter.visitor, () => setChildFilter(f => ({ ...f, visitor: !f.visitor })))}
-                    {hasFilters && <button onClick={() => setChildFilter({ group: "all", gender: "all", visitor: false })} style={{ padding: "6px 12px", borderRadius: 20, border: "none", background: "none", color: T.slate400, fontSize: 13, cursor: "pointer", fontFamily: FONT }}>Clear</button>}
-                    <span style={{ marginLeft: "auto", fontSize: 13, color: T.slate400 }}>{filtered.length} child{filtered.length !== 1 ? "ren" : ""}</span>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 20 }} className="children-stats">
+                    {stats.map(s => (
+                      <div key={s.label} style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid rgba(255,255,255,0.95)", borderRadius: 14, padding: "16px 18px", boxShadow: "0 2px 12px rgba(26,39,68,0.07)" }}>
+                        <div style={{ width: 32, height: 32, borderRadius: 8, background: s.iconBg, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 10 }}>
+                          <svg width="16" height="16" fill="none" stroke={s.iconColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d={s.icon}/></svg>
+                        </div>
+                        <div style={{ fontSize: 26, fontWeight: 800, color: T.sidebar, lineHeight: 1 }}>{s.value}</div>
+                        <div style={{ fontSize: 11, fontWeight: 600, color: T.slate400, marginTop: 4, textTransform: "uppercase", letterSpacing: "0.05em" }}>{s.label}</div>
+                      </div>
+                    ))}
                   </div>
                 );
               })()}
 
+              {/* ── Search + Add ── */}
+              <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
+                <div style={{ position: "relative", flex: 1 }}>
+                  <div style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }}><Icon name="search" size={16} color={T.slate400} /></div>
+                  <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, parent or group…"
+                    style={{ width: "100%", padding: "11px 12px 11px 38px", border: "1.5px solid rgba(255,255,255,0.9)", borderRadius: 12, fontSize: 14, fontFamily: FONT, background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", outline: "none", boxShadow: "0 1px 4px rgba(26,39,68,0.06)", color: T.slate900 }} />
+                </div>
+                <Btn onClick={() => setModal({ type: "add" })}><Icon name="plus" size={14} />Add Child</Btn>
+              </div>
+
+              {/* ── Filter pills ── */}
+              {(() => {
+                const pill = (label, active, accent, onClick) => (
+                  <button key={label} onClick={onClick} style={{ padding: "6px 14px", borderRadius: 20, border: `1.5px solid ${active ? accent : "rgba(255,255,255,0.8)"}`, background: active ? accent : "rgba(255,255,255,0.7)", color: active ? "white" : T.slate600, fontSize: 13, fontWeight: active ? 700 : 500, cursor: "pointer", fontFamily: FONT, transition: "all .15s", whiteSpace: "nowrap", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }}>{label}</button>
+                );
+                const hasFilters = childFilter.group !== "all" || childFilter.gender !== "all" || childFilter.visitor;
+                return (
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20, alignItems: "center" }}>
+                    {pill("Nursery", childFilter.group === "nursery", "#7C3AED", () => setChildFilter(f => ({ ...f, group: f.group === "nursery" ? "all" : "nursery" })))}
+                    {pill("Juniors", childFilter.group === "juniors", "#059669", () => setChildFilter(f => ({ ...f, group: f.group === "juniors" ? "all" : "juniors" })))}
+                    <div style={{ width: 1, height: 22, background: "rgba(26,39,68,0.12)" }} />
+                    {pill("Boys", childFilter.gender === "boy", T.teal, () => setChildFilter(f => ({ ...f, gender: f.gender === "boy" ? "all" : "boy" })))}
+                    {pill("Girls", childFilter.gender === "girl", "#BE185D", () => setChildFilter(f => ({ ...f, gender: f.gender === "girl" ? "all" : "girl" })))}
+                    <div style={{ width: 1, height: 22, background: "rgba(26,39,68,0.12)" }} />
+                    {pill("Visitors", childFilter.visitor, "#F59E0B", () => setChildFilter(f => ({ ...f, visitor: !f.visitor })))}
+                    {hasFilters && <button onClick={() => setChildFilter({ group: "all", gender: "all", visitor: false })} style={{ padding: "5px 12px", borderRadius: 20, border: "none", background: "none", color: T.slate400, fontSize: 13, cursor: "pointer", fontFamily: FONT }}>Clear</button>}
+                    <span style={{ marginLeft: "auto", fontSize: 13, fontWeight: 500, color: T.slate500 }}>{filtered.length} child{filtered.length !== 1 ? "ren" : ""}</span>
+                  </div>
+                );
+              })()}
+
+              {/* ── Child cards ── */}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 12 }}>
                 {filtered.map(child => {
                   const group = getAgeGroup(liveAge(child));
                   const absent = weeksAbsent(child.id, attendance, child.enrolled);
                   const birthday = isBirthdayThisWeek(child.dob);
+                  const groupAccent = group?.label === "Nursery" ? "#7C3AED" : group?.label === "Juniors" ? "#059669" : T.teal;
                   return (
                     <div key={child.id} onClick={() => setModal({ type: "view", payload: child })}
-                      style={{ background: T.white, borderRadius: 12, padding: "16px", border: `1px solid ${T.slate200}`, cursor: "pointer", transition: "box-shadow .15s, transform .15s", boxShadow: "0 1px 3px rgba(0,0,0,.04)" }}
-                      onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,.1)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
-                      onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,.04)"; e.currentTarget.style.transform = ""; }}>
+                      className="checkin-child-card"
+                      style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid rgba(255,255,255,0.95)", borderRadius: 14, padding: "16px", cursor: "pointer", transition: "box-shadow .15s, transform .15s", boxShadow: "0 2px 8px rgba(26,39,68,0.06)", borderLeft: `3px solid ${groupAccent}` }}>
                       <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                        <ChildAvatar child={child} size={44} />
+                        <ChildAvatar child={child} size={46} />
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontWeight: 600, fontSize: 15, color: T.slate900, marginBottom: 6 }}>{child.name}</div>
+                          <div style={{ fontWeight: 700, fontSize: 15, color: T.slate900, marginBottom: 6 }}>{child.name}</div>
                           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                             {group && <Badge label={group.label} bg={group.color} color={group.text} />}
                             <Badge label={`Age ${liveAge(child)}`} bg={T.slate100} color={T.slate500} />
                             {child.gender && <Badge label={child.gender} bg={child.gender === "Boy" ? T.blueLight : "#FCE7F3"} color={child.gender === "Boy" ? T.blue : "#BE185D"} />}
                             {child.visitor && <Badge label="Visitor" bg="#F5F3FF" color="#7C3AED" />}
-                            {birthday && <Badge label="Birthday" bg="#FEF9C3" color="#854D0E" />}
+                            {birthday && <Badge label="🎂 Birthday" bg="#FEF9C3" color="#854D0E" />}
                             {historyLoaded && absent >= 3 && !child.visitor && <Badge label={`${absent}wk absent`} bg={T.redLight} color={T.red} />}
                             {child.medical && child.medical !== "No known conditions" && <MedicalBadge />}
                           </div>
-                          {(child.parent1 || child.parent2) && <div style={{ fontSize: 12, color: T.slate400, marginTop: 8 }}>{[child.parent1, child.parent2].filter(Boolean).join(" · ")}</div>}
-                          {(child.siblings || []).length > 0 && <div style={{ fontSize: 12, color: T.tealDark, marginTop: 4, display: "flex", alignItems: "center", gap: 4 }}><Icon name="siblings" size={12} color={T.tealDark} />{(child.siblings || []).length} sibling{(child.siblings || []).length > 1 ? "s" : ""}</div>}
+                          {(child.parent1 || child.parent2) && (
+                            <div style={{ fontSize: 12, color: T.slate400, marginTop: 8, display: "flex", alignItems: "center", gap: 4 }}>
+                              <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                              {[child.parent1, child.parent2].filter(Boolean).join(" · ")}
+                            </div>
+                          )}
+                          {(child.siblings || []).length > 0 && (
+                            <div style={{ fontSize: 12, color: T.tealDark, marginTop: 4, display: "flex", alignItems: "center", gap: 4 }}>
+                              <Icon name="siblings" size={12} color={T.tealDark} />
+                              {(child.siblings || []).length} sibling{(child.siblings || []).length > 1 ? "s" : ""}
+                            </div>
+                          )}
                         </div>
                         <Icon name="chevronRight" size={16} color={T.slate300} />
                       </div>
@@ -2582,6 +2623,13 @@ export default function App() {
                   );
                 })}
               </div>
+              {filtered.length === 0 && (
+                <div style={{ textAlign: "center", padding: "60px 20px", background: "rgba(255,255,255,0.7)", borderRadius: 16, border: "1px solid rgba(255,255,255,0.9)" }}>
+                  <div style={{ fontSize: 32, marginBottom: 12 }}>🔍</div>
+                  <div style={{ fontWeight: 600, color: T.slate700, marginBottom: 4 }}>No children found</div>
+                  <div style={{ fontSize: 13, color: T.slate400 }}>Try adjusting your search or filters</div>
+                </div>
+              )}
             </div>
           )}
 
