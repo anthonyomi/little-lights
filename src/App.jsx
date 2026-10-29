@@ -1162,33 +1162,25 @@ function ChildDetail({ child, onClose, onEdit, onDelete, allChildren, attendance
   const [showQR, setShowQR] = useState(false);
 
   return (
-    <div style={{ fontFamily: FONT }}>
-      {/* Header — hero banner with overlapping photo */}
-      <div style={{ borderRadius: 14, border: `1px solid ${T.slate200}`, marginBottom: 20, overflow: "hidden" }}>
-        {/* Banner */}
-        <div style={{ background: `linear-gradient(135deg, ${T.teal} 0%, ${T.tealDark} 100%)`, height: 120 }} />
-        {/* Photo row — sits below banner, photo pulled up via negative margin */}
-        <div style={{ padding: "0 20px 16px", background: T.white }}>
-          <div style={{ display: "flex", alignItems: "flex-end", gap: 16 }}>
-            {/* Photo pulled up to overlap the banner */}
-            <div style={{ marginTop: -90, flexShrink: 0 }}>
-              {photo
-                ? <img src={photo} alt={child.name} style={{ width: 140, height: 140, borderRadius: "50%", objectFit: "cover", border: `4px solid ${T.white}`, boxShadow: "0 4px 20px rgba(0,0,0,.2)", display: "block" }} />
-                : <div style={{ width: 140, height: 140, borderRadius: "50%", background: avatarColors[(child?.name?.charCodeAt(0) || 0) % avatarColors.length], display: "flex", alignItems: "center", justifyContent: "center", border: `4px solid ${T.white}`, boxShadow: "0 4px 20px rgba(0,0,0,.2)", fontSize: 44, fontWeight: 600, color: "white", fontFamily: FONT }}>
-                    {child.name?.split(" ").map(w => w[0]).join("").slice(0,2).toUpperCase()}
-                  </div>
-              }
-            </div>
-            {/* Name & badges — aligned to bottom of photo */}
-            <div style={{ paddingBottom: 4, paddingTop: 16, flex: 1, minWidth: 0 }}>
-              <h3 style={{ margin: "0 0 8px", fontSize: 20, fontWeight: 600, color: T.slate900, lineHeight: 1.2 }}>{child.name}</h3>
-              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                {group && <Badge label={group.label} bg={group.color} color={group.text} />}
-                <Badge label={child.gender} bg={child.gender === "Boy" ? T.blueLight : "#FCE7F3"} color={child.gender === "Boy" ? T.blue : "#BE185D"} />
-                <Badge label={`Age ${liveAge(child)}`} bg={T.slate100} color={T.slate600} />
-                {birthday && <Badge label="Birthday this week!" bg="#FEF9C3" color="#854D0E" />}
-                {historyLoaded && absent >= 3 && <Badge label={`Absent ${absent} weeks`} bg={T.redLight} color={T.red} />}
+    <div style={{ fontFamily: FONT, display: "flex", flexDirection: "column" }}>
+      {/* Header — compact hero */}
+      <div style={{ borderRadius: 14, border: `1px solid ${T.slate200}`, marginBottom: 16, overflow: "hidden" }}>
+        {/* Compact banner with photo + name side by side */}
+        <div style={{ background: `linear-gradient(135deg, ${T.teal} 0%, ${T.tealDark} 100%)`, padding: "16px 20px", display: "flex", alignItems: "center", gap: 16 }}>
+          {photo
+            ? <img src={photo} alt={child.name} style={{ width: 72, height: 72, borderRadius: "50%", objectFit: "cover", border: `3px solid rgba(255,255,255,0.9)`, boxShadow: "0 2px 12px rgba(0,0,0,.25)", display: "block", flexShrink: 0 }} />
+            : <div style={{ width: 72, height: 72, borderRadius: "50%", background: avatarColors[(child?.name?.charCodeAt(0) || 0) % avatarColors.length], display: "flex", alignItems: "center", justifyContent: "center", border: `3px solid rgba(255,255,255,0.9)`, boxShadow: "0 2px 12px rgba(0,0,0,.25)", fontSize: 26, fontWeight: 700, color: "white", fontFamily: FONT, flexShrink: 0 }}>
+                {child.name?.split(" ").map(w => w[0]).join("").slice(0,2).toUpperCase()}
               </div>
+          }
+          <div style={{ minWidth: 0 }}>
+            <h3 style={{ margin: "0 0 6px", fontSize: 18, fontWeight: 700, color: "white", lineHeight: 1.2 }}>{child.name}</h3>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              {group && <Badge label={group.label} bg="rgba(255,255,255,0.25)" color="white" />}
+              <Badge label={child.gender} bg="rgba(255,255,255,0.2)" color="white" />
+              <Badge label={`Age ${liveAge(child)}`} bg="rgba(255,255,255,0.2)" color="white" />
+              {birthday && <Badge label="🎂 Birthday" bg="rgba(255,235,0,0.3)" color="white" />}
+              {historyLoaded && absent >= 3 && <Badge label={`${absent} wks absent`} bg="rgba(239,68,68,0.35)" color="white" />}
             </div>
           </div>
         </div>
@@ -1271,7 +1263,8 @@ function ChildDetail({ child, onClose, onEdit, onDelete, allChildren, attendance
           Enrolled: {formatStoredDate(child.enrolled)}
         </p>
       )}
-      <div style={{ display: "flex", gap: 10, justifyContent: "space-between", paddingTop: 8, borderTop: `1px solid ${T.slate100}`, flexWrap: "wrap" }}>
+      {/* Sticky action bar — always visible at the bottom of the modal */}
+      <div style={{ position: "sticky", bottom: 0, background: "rgba(255,255,255,0.97)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderTop: `1px solid ${T.slate100}`, paddingTop: 12, paddingBottom: 4, marginTop: 8, display: "flex", gap: 10, justifyContent: "space-between", flexWrap: "wrap" }}>
         <Btn variant="danger" small onClick={() => { if (window.confirm(`Remove ${child.name}?`)) { onDelete(child.id); onClose(); } }}>Delete</Btn>
         <div style={{ display: "flex", gap: 10 }}>
           <Btn variant="secondary" small onClick={() => setShowQR(true)}><Icon name="qr" size={14} />QR Code</Btn>
@@ -2035,9 +2028,12 @@ export default function App() {
   const todayKey = dateKey(today);
   const isSunday = today.getDay() === 0;
   const sundayLabel = isSunday ? "Total This Sunday" : "Total Last Sunday";
+  // On non-Sundays, don't show last Sunday's children as checked in — session is closed.
+  // sessionAtt still holds last Sunday's data for history purposes but "live" status is zero.
   const sessionAtt = attendance[sessionKey] || {};
-  const checkedInNow = Object.values(sessionAtt).filter(a => a.in && !a.out).length;
-  const totalToday = Object.keys(sessionAtt).length;
+  const liveSessionAtt = isSunday ? sessionAtt : {};
+  const checkedInNow = Object.values(liveSessionAtt).filter(a => a.in && !a.out).length;
+  const totalToday = isSunday ? Object.keys(sessionAtt).length : Object.keys(sessionAtt).length;
   const isAdmin = user?.email === ADMIN_EMAIL;
 
   const logActivity = async (action, childName, collectedBy) => {
@@ -2229,8 +2225,8 @@ export default function App() {
           {tab === "dashboard" && (
             <div>
               {(() => {
-                const nurseryPresent = children.filter(c => liveAge(c) <= 5 && sessionAtt[c.id]?.in && !sessionAtt[c.id]?.out).length;
-                const juniorsPresent = children.filter(c => liveAge(c) >= 6 && sessionAtt[c.id]?.in && !sessionAtt[c.id]?.out).length;
+                const nurseryPresent = children.filter(c => liveAge(c) <= 5 && liveSessionAtt[c.id]?.in && !liveSessionAtt[c.id]?.out).length;
+                const juniorsPresent = children.filter(c => liveAge(c) >= 6 && liveSessionAtt[c.id]?.in && !liveSessionAtt[c.id]?.out).length;
                 const nurseryTotal = children.filter(c => liveAge(c) <= 5).length;
                 const juniorsTotal = children.filter(c => liveAge(c) >= 6).length;
                 return (<>
@@ -2340,8 +2336,8 @@ export default function App() {
             <div>
               {/* ── STAT CARDS ── */}
               {(() => {
-                const nurseryPresent = children.filter(c => liveAge(c) <= 5 && sessionAtt[c.id]?.in && !sessionAtt[c.id]?.out).length;
-                const juniorsPresent = children.filter(c => liveAge(c) >= 6 && sessionAtt[c.id]?.in && !sessionAtt[c.id]?.out).length;
+                const nurseryPresent = children.filter(c => liveAge(c) <= 5 && liveSessionAtt[c.id]?.in && !liveSessionAtt[c.id]?.out).length;
+                const juniorsPresent = children.filter(c => liveAge(c) >= 6 && liveSessionAtt[c.id]?.in && !liveSessionAtt[c.id]?.out).length;
                 const stats = [
                   { label: "Present Now", value: checkedInNow, accent: "#0284C7", accentBg: "rgba(2,132,199,0.08)", icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" },
                   { label: sundayLabel, value: totalToday, accent: "#0369A1", accentBg: "rgba(3,105,161,0.08)", icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" },
@@ -2349,29 +2345,31 @@ export default function App() {
                   { label: "Juniors", value: juniorsPresent, accent: "#059669", accentBg: "rgba(5,150,105,0.08)", icon: "M13 10V3L4 14h7v7l9-11h-7z" },
                 ];
                 return (
-                  <div className="checkin-stats" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 24 }}>
+                  <div className="checkin-stats" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, marginBottom: 16 }}>
                     {stats.map(s => (
                       <div key={s.label} style={{
                         background: "rgba(255,255,255,0.88)",
                         backdropFilter: "blur(16px)",
                         WebkitBackdropFilter: "blur(16px)",
-                        borderRadius: 16,
-                        padding: "16px 14px",
+                        borderRadius: 12,
+                        padding: "10px 10px 8px",
                         border: "1px solid rgba(255,255,255,0.95)",
-                        boxShadow: "0 2px 12px rgba(26,39,68,0.08)",
+                        boxShadow: "0 2px 8px rgba(26,39,68,0.07)",
+                        display: "flex", alignItems: "center", gap: 10,
                       }}>
                         <div style={{
-                          width: 32, height: 32, borderRadius: 10,
+                          width: 36, height: 36, borderRadius: 10, flexShrink: 0,
                           background: s.accentBg,
                           display: "flex", alignItems: "center", justifyContent: "center",
-                          marginBottom: 10,
                         }}>
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                             <path d={s.icon} stroke={s.accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                           </svg>
                         </div>
-                        <div style={{ fontSize: 28, fontWeight: 800, color: "#1A2744", lineHeight: 1, marginBottom: 4 }}>{s.value}</div>
-                        <div style={{ fontSize: 11, fontWeight: 600, color: T.slate500, textTransform: "uppercase", letterSpacing: ".06em" }}>{s.label}</div>
+                        <div>
+                          <div style={{ fontSize: 22, fontWeight: 800, color: "#1A2744", lineHeight: 1, marginBottom: 2 }}>{s.value}</div>
+                          <div style={{ fontSize: 10, fontWeight: 600, color: T.slate500, textTransform: "uppercase", letterSpacing: ".06em", lineHeight: 1.2 }}>{s.label}</div>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -2403,7 +2401,7 @@ export default function App() {
                 if (!groupChildren.length) return null;
                 const groupAccent = groupName === "Nursery" ? "#7C3AED" : "#059669";
                 const groupAccentBg = groupName === "Nursery" ? "rgba(124,58,237,0.08)" : "rgba(5,150,105,0.08)";
-                const presentCount = groupChildren.filter(c => sessionAtt[c.id]?.in && !sessionAtt[c.id]?.out).length;
+                const presentCount = groupChildren.filter(c => liveSessionAtt[c.id]?.in && !liveSessionAtt[c.id]?.out).length;
                 return (
                   <div key={groupName} style={{ marginBottom: 28 }}>
                     {/* Section header */}
@@ -2420,7 +2418,7 @@ export default function App() {
 
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                       {groupChildren.map(child => {
-                        const rec = sessionAtt[child.id];
+                        const rec = liveSessionAtt[child.id];
                         const isIn = rec?.in && !rec?.out;
                         const isDone = rec?.in && rec?.out;
                         const hasMedical = child.medical && child.medical !== "No known conditions";
@@ -2502,7 +2500,7 @@ export default function App() {
                     <div style={{ flex: 1, height: 1, background: T.slate200 }} />
                   </div>
                   {filtered.filter(c => !getAgeGroup(liveAge(c))).map(child => {
-                    const rec = sessionAtt[child.id];
+                    const rec = liveSessionAtt[child.id];
                     const isIn = rec?.in && !rec?.out;
                     const isDone = rec?.in && rec?.out;
                     return (
@@ -2541,14 +2539,16 @@ export default function App() {
                   { label: "Visitors", value: visitorsCount, icon: "M15 9a2 2 0 10-4 0v5a2 2 0 01-2 2h6m-6-4h4m8 0a9 9 0 11-18 0 9 9 0 0118 0z", iconBg: "#F59E0B", iconColor: "#fff" },
                 ];
                 return (
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 20 }} className="children-stats">
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8, marginBottom: 16 }} className="children-stats">
                     {stats.map(s => (
-                      <div key={s.label} style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid rgba(255,255,255,0.95)", borderRadius: 14, padding: "16px 18px", boxShadow: "0 2px 12px rgba(26,39,68,0.07)" }}>
-                        <div style={{ width: 32, height: 32, borderRadius: 8, background: s.iconBg, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 10 }}>
+                      <div key={s.label} style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid rgba(255,255,255,0.95)", borderRadius: 12, padding: "10px 10px 8px", boxShadow: "0 2px 8px rgba(26,39,68,0.07)", display: "flex", alignItems: "center", gap: 10 }}>
+                        <div style={{ width: 36, height: 36, borderRadius: 10, background: s.iconBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                           <svg width="16" height="16" fill="none" stroke={s.iconColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d={s.icon}/></svg>
                         </div>
-                        <div style={{ fontSize: 26, fontWeight: 800, color: T.sidebar, lineHeight: 1 }}>{s.value}</div>
-                        <div style={{ fontSize: 11, fontWeight: 600, color: T.slate400, marginTop: 4, textTransform: "uppercase", letterSpacing: "0.05em" }}>{s.label}</div>
+                        <div>
+                          <div style={{ fontSize: 22, fontWeight: 800, color: T.sidebar, lineHeight: 1, marginBottom: 2 }}>{s.value}</div>
+                          <div style={{ fontSize: 10, fontWeight: 600, color: T.slate400, textTransform: "uppercase", letterSpacing: "0.05em", lineHeight: 1.2 }}>{s.label}</div>
+                        </div>
                       </div>
                     ))}
                   </div>
