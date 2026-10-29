@@ -284,7 +284,7 @@ function Avatar({ child, size = 40, photoUrl = null }) {
 // Without this, scrolling into a list of 40+ children fires 40+ simultaneous
 // Storage requests + image decodes, spiking RAM and crashing Chrome on low-RAM
 // Android devices (Samsung Galaxy Tab A, 2 GB).
-const MAX_CONCURRENT_PHOTOS = 3;
+const MAX_CONCURRENT_PHOTOS = 8;
 const photoCache = {};       // childId → url (or "error")
 const photoQueue = [];       // [{childId, resolve}]
 const photoCallbacks = {};   // childId → [resolve, ...]
@@ -344,7 +344,7 @@ function ChildAvatar({ child, size = 40 }) {
     if (!("IntersectionObserver" in window)) { setVisible(true); return; }
     const obs = new IntersectionObserver(
       ([entry]) => { if (entry.isIntersecting) { setVisible(true); obs.disconnect(); } },
-      { rootMargin: "0px" } // only load when actually in view — avoids bulk-loading the whole list
+      { rootMargin: "200px" } // start loading before fully in view for snappier appearance
     );
     obs.observe(el);
     return () => obs.disconnect();
@@ -1936,8 +1936,14 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [teacherName, setTeacherName] = useState("");
   const [authLoading, setAuthLoading] = useState(true);
-  const [tab, setTabRaw] = useState("checkin");
-  const setTab = (t) => { setTabRaw(t); window.scrollTo({ top: 0, behavior: "instant" }); };
+  const [tab, setTabRaw] = useState(() => {
+    try { return sessionStorage.getItem("ll_tab") || "checkin"; } catch { return "checkin"; }
+  });
+  const setTab = (t) => {
+    setTabRaw(t);
+    try { sessionStorage.setItem("ll_tab", t); } catch {}
+    window.scrollTo({ top: 0, behavior: "instant" });
+  };
   const [children, setChildren] = useState([]);
   const [attendance, setAttendance] = useState({});
   const [historyLoaded, setHistoryLoaded] = useState(false);
