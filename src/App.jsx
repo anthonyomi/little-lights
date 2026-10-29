@@ -1318,10 +1318,10 @@ function CheckInManager({ children, attendance, sessionKey }) {
   };
 
   return (
-    <div style={{ background: T.white, border: `1px solid ${T.slate200}`, borderRadius: 10, padding: "12px 14px", marginBottom: 16 }}>
+    <div style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid rgba(255,255,255,0.95)", borderRadius: 14, padding: "12px 14px", marginBottom: 16, boxShadow: "0 2px 10px rgba(26,39,68,0.07)" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
         <div>
-          <h4 style={{ margin: 0, fontSize: 13, fontWeight: 600, color: T.slate800 }}>Check-In Management</h4>
+          <h4 style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#1A2744" }}>Check-In Management</h4>
           <p style={{ margin: 0, fontSize: 11, color: T.slate400 }}>{isSunday ? "Today" : "Last Sunday"} · {checkedInChildren.length} children</p>
         </div>
         {checkedInChildren.length > 0 && !confirmClear && (
@@ -1353,7 +1353,7 @@ function CheckInManager({ children, attendance, sessionKey }) {
           const isIn = rec?.in && !rec?.out;
           const isDone = rec?.in && rec?.out;
           return (
-            <div key={child.id} style={{ background: T.slate50, borderRadius: 8, padding: "8px 10px", border: `1px solid ${T.slate200}` }}>
+            <div key={child.id} style={{ background: "rgba(255,255,255,0.7)", borderRadius: 8, padding: "8px 10px", border: "1px solid rgba(255,255,255,0.9)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
                 <ChildAvatar child={child} size={28} />
                 <div style={{ minWidth: 0 }}>
@@ -1382,6 +1382,308 @@ function CheckInManager({ children, attendance, sessionKey }) {
           );
         })}
       </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SUPER ADMIN PORTAL
+// ─────────────────────────────────────────────────────────────────────────────
+function SuperAdminPortal({ children = [], attendance = {}, sessionKey = "", currentUser }) {
+  const [activeSection, setActiveSection] = useState("overview");
+  const [teachers, setTeachers] = useState([]);
+  const [allOrgs, setAllOrgs] = useState([]);
+  const [announcements, setAnnouncements] = useState([]);
+  const [newAnnouncement, setNewAnnouncement] = useState("");
+  const [announcementType, setAnnouncementType] = useState("info");
+  const [savingAnn, setSavingAnn] = useState(false);
+  const [annSuccess, setAnnSuccess] = useState("");
+
+  useEffect(() => {
+    const tRef = dbRef(db, orgPath("teachers"));
+    const unsub = onValue(tRef, snap => { const d = snap.val(); setTeachers(d ? Object.values(d) : []); });
+    return () => unsub();
+  }, []);
+
+  useEffect(() => {
+    const aRef = dbRef(db, orgPath("announcements"));
+    const unsub = onValue(aRef, snap => { const d = snap.val(); setAnnouncements(d ? Object.entries(d).map(([k,v]) => ({id:k,...v})).sort((a,b) => b.createdAt - a.createdAt) : []); });
+    return () => unsub();
+  }, []);
+
+  // Org-wide stats
+  const totalChildren = children.length;
+  const sessionAtt = attendance[sessionKey] || {};
+  const totalSessions = Object.keys(attendance).length;
+  const allDates = Object.keys(attendance).sort();
+  const avgAttendance = totalSessions > 0 ? Math.round(Object.values(attendance).reduce((sum, s) => sum + Object.keys(s || {}).length, 0) / totalSessions) : 0;
+  const nurseryKids = children.filter(c => c.group === "nursery").length;
+  const juniorsKids = children.filter(c => c.group === "juniors").length;
+  const activeTeachers = teachers.length;
+
+  // Last 8 Sundays attendance trend
+  const last8 = allDates.slice(-8).map(d => ({ date: d.slice(5), count: Object.keys(attendance[d] || {}).length }));
+
+  const postAnnouncement = async () => {
+    if (!newAnnouncement.trim()) return;
+    setSavingAnn(true);
+    try {
+      const ref = push(dbRef(db, orgPath("announcements")));
+      await set(ref, { text: newAnnouncement.trim(), type: announcementType, createdAt: Date.now(), author: currentUser?.displayName || currentUser?.email || "Admin" });
+      setNewAnnouncement("");
+      setAnnSuccess("Posted!");
+      setTimeout(() => setAnnSuccess(""), 3000);
+    } catch(e) { console.error(e); }
+    setSavingAnn(false);
+  };
+
+  const deleteAnnouncement = async (id) => {
+    if (!window.confirm("Delete this announcement?")) return;
+    await remove(dbRef(db, orgPath(`announcements/${id}`)));
+  };
+
+  const glassCard = { background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid rgba(255,255,255,0.95)", borderRadius: 16, boxShadow: "0 2px 12px rgba(26,39,68,0.07)" };
+
+  const sections = [
+    { id: "overview", label: "Overview", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" },
+    { id: "children", label: "Children", icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" },
+    { id: "attendance", label: "Attendance", icon: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" },
+    { id: "announcements", label: "Announcements", icon: "M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" },
+    { id: "teachers", label: "Teachers", icon: "M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" },
+  ];
+
+  return (
+    <div style={{ fontFamily: FONT }}>
+      {/* Header */}
+      <div style={{ ...glassCard, padding: "20px 24px", marginBottom: 16, background: "linear-gradient(135deg, rgba(124,58,237,0.15) 0%, rgba(255,255,255,0.92) 100%)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: "linear-gradient(135deg, #7C3AED, #5B21B6)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 14px rgba(124,58,237,0.35)", flexShrink: 0 }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2L13.09 8.26L19 7L15.45 11.86L21 14L15.45 16.14L19 21L13.09 15.74L12 22L10.91 15.74L5 21L8.55 16.14L3 14L8.55 11.86L5 7L10.91 8.26L12 2Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+          <div>
+            <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: "#1A2744" }}>Super Admin Portal</h2>
+            <p style={{ margin: 0, fontSize: 12, color: T.slate500 }}>NCC Bermondsey · Full org control</p>
+          </div>
+          <div style={{ marginLeft: "auto", background: "rgba(124,58,237,0.1)", borderRadius: 8, padding: "4px 10px", fontSize: 11, fontWeight: 700, color: "#7C3AED", textTransform: "uppercase", letterSpacing: ".06em" }}>
+            Super Admin
+          </div>
+        </div>
+      </div>
+
+      {/* Section nav pills */}
+      <div style={{ display: "flex", gap: 6, marginBottom: 16, flexWrap: "wrap" }}>
+        {sections.map(s => (
+          <button key={s.id} onClick={() => setActiveSection(s.id)}
+            style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 20, border: "none", cursor: "pointer", fontFamily: FONT, fontSize: 12, fontWeight: 600, transition: "all .15s",
+              background: activeSection === s.id ? "#7C3AED" : "rgba(255,255,255,0.85)",
+              color: activeSection === s.id ? "#fff" : T.slate600,
+              boxShadow: activeSection === s.id ? "0 2px 8px rgba(124,58,237,0.3)" : "0 1px 4px rgba(26,39,68,0.08)",
+              backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+              <path d={s.icon} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            {s.label}
+          </button>
+        ))}
+      </div>
+
+      {/* ── OVERVIEW ── */}
+      {activeSection === "overview" && (
+        <div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: 10, marginBottom: 16 }}>
+            {[
+              { label: "Total Children", value: totalChildren, accent: "#7C3AED", accentBg: "rgba(124,58,237,0.09)", icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" },
+              { label: "Sessions Run", value: totalSessions, accent: T.teal, accentBg: "rgba(2,132,199,0.09)", icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" },
+              { label: "Avg / Sunday", value: avgAttendance, accent: "#059669", accentBg: "rgba(5,150,105,0.09)", icon: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" },
+              { label: "Teachers", value: activeTeachers, accent: "#D97706", accentBg: "rgba(217,119,6,0.09)", icon: "M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" },
+            ].map(s => (
+              <div key={s.label} style={{ ...glassCard, padding: "12px 14px", display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ width: 38, height: 38, borderRadius: 10, background: s.accentBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d={s.icon} stroke={s.accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                </div>
+                <div>
+                  <div style={{ fontSize: 24, fontWeight: 800, color: s.accent, lineHeight: 1, marginBottom: 2 }}>{s.value}</div>
+                  <div style={{ fontSize: 10, fontWeight: 600, color: T.slate500, textTransform: "uppercase", letterSpacing: ".06em" }}>{s.label}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Group breakdown */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
+            <div style={{ ...glassCard, padding: "16px 18px" }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: T.slate500, textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 8 }}>Nursery</div>
+              <div style={{ fontSize: 32, fontWeight: 800, color: "#7C3AED" }}>{nurseryKids}</div>
+              <div style={{ fontSize: 11, color: T.slate400 }}>Ages 0–5</div>
+              <div style={{ marginTop: 8, height: 6, background: "rgba(124,58,237,0.12)", borderRadius: 3, overflow: "hidden" }}>
+                <div style={{ height: "100%", background: "#7C3AED", borderRadius: 3, width: `${totalChildren > 0 ? Math.round(nurseryKids/totalChildren*100) : 0}%`, transition: "width .5s" }} />
+              </div>
+              <div style={{ fontSize: 11, color: T.slate400, marginTop: 4 }}>{totalChildren > 0 ? Math.round(nurseryKids/totalChildren*100) : 0}% of total</div>
+            </div>
+            <div style={{ ...glassCard, padding: "16px 18px" }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: T.slate500, textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 8 }}>Juniors</div>
+              <div style={{ fontSize: 32, fontWeight: 800, color: "#059669" }}>{juniorsKids}</div>
+              <div style={{ fontSize: 11, color: T.slate400 }}>Ages 5+</div>
+              <div style={{ marginTop: 8, height: 6, background: "rgba(5,150,105,0.12)", borderRadius: 3, overflow: "hidden" }}>
+                <div style={{ height: "100%", background: "#059669", borderRadius: 3, width: `${totalChildren > 0 ? Math.round(juniorsKids/totalChildren*100) : 0}%`, transition: "width .5s" }} />
+              </div>
+              <div style={{ fontSize: 11, color: T.slate400, marginTop: 4 }}>{totalChildren > 0 ? Math.round(juniorsKids/totalChildren*100) : 0}% of total</div>
+            </div>
+          </div>
+
+          {/* Attendance sparkline */}
+          {last8.length > 0 && (
+            <div style={{ ...glassCard, padding: "16px 18px" }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#1A2744", marginBottom: 12 }}>Attendance — Last {last8.length} Sundays</div>
+              <div style={{ display: "flex", alignItems: "flex-end", gap: 6, height: 60 }}>
+                {last8.map((s, i) => {
+                  const maxCount = Math.max(...last8.map(x => x.count), 1);
+                  const pct = Math.max((s.count / maxCount) * 100, 8);
+                  return (
+                    <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: "#7C3AED" }}>{s.count}</div>
+                      <div style={{ width: "100%", height: `${pct}%`, background: "linear-gradient(180deg, #7C3AED, #5B21B6)", borderRadius: "4px 4px 2px 2px", minHeight: 4 }} />
+                      <div style={{ fontSize: 9, color: T.slate400, whiteSpace: "nowrap" }}>{s.date}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── CHILDREN ── */}
+      {activeSection === "children" && (
+        <div>
+          <div style={{ ...glassCard, padding: "14px 16px", marginBottom: 12 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#1A2744", marginBottom: 10 }}>All Registered Children ({totalChildren})</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 400, overflowY: "auto" }}>
+              {children.sort((a,b) => a.name?.localeCompare(b.name)).map(c => {
+                const groupLabel = c.group === "nursery" ? "Nursery" : c.group === "juniors" ? "Juniors" : "";
+                const groupColor = c.group === "nursery" ? "#7C3AED" : "#059669";
+                const groupBg = c.group === "nursery" ? "rgba(124,58,237,0.1)" : "rgba(5,150,105,0.1)";
+                return (
+                  <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 10px", background: "rgba(255,255,255,0.6)", borderRadius: 8, border: "1px solid rgba(255,255,255,0.8)" }}>
+                    <ChildAvatar child={c} size={28} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 600, fontSize: 13, color: "#1A2744" }}>{c.name}</div>
+                      {c.dob && <div style={{ fontSize: 11, color: T.slate400 }}>DOB: {c.dob}</div>}
+                    </div>
+                    {groupLabel && <span style={{ background: groupBg, color: groupColor, fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 20, textTransform: "uppercase", letterSpacing: ".05em" }}>{groupLabel}</span>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── ATTENDANCE ── */}
+      {activeSection === "attendance" && (
+        <div>
+          <div style={{ ...glassCard, padding: "14px 16px", marginBottom: 12 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#1A2744", marginBottom: 10 }}>Session History ({totalSessions} sessions)</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 450, overflowY: "auto" }}>
+              {allDates.slice().reverse().map(dateStr => {
+                const sess = attendance[dateStr] || {};
+                const count = Object.keys(sess).length;
+                const inCount = Object.values(sess).filter(s => s.in && !s.out).length;
+                const outCount = Object.values(sess).filter(s => s.out).length;
+                return (
+                  <div key={dateStr} style={{ display: "flex", alignItems: "center", gap: 12, padding: "8px 12px", background: "rgba(255,255,255,0.6)", borderRadius: 10, border: "1px solid rgba(255,255,255,0.8)" }}>
+                    <div style={{ width: 38, height: 38, borderRadius: 10, background: "rgba(124,58,237,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="#7C3AED" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 700, fontSize: 13, color: "#1A2744" }}>{dateStr}</div>
+                      <div style={{ fontSize: 11, color: T.slate400 }}>{count} children · {outCount} checked out</div>
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <div style={{ fontSize: 20, fontWeight: 800, color: "#7C3AED" }}>{count}</div>
+                      <div style={{ fontSize: 10, color: T.slate400 }}>total</div>
+                    </div>
+                  </div>
+                );
+              })}
+              {allDates.length === 0 && <p style={{ color: T.slate400, fontSize: 13, textAlign: "center", margin: "20px 0" }}>No attendance data yet.</p>}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── ANNOUNCEMENTS ── */}
+      {activeSection === "announcements" && (
+        <div>
+          <div style={{ ...glassCard, padding: "14px 16px", marginBottom: 12 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#1A2744", marginBottom: 10 }}>Post Announcement</div>
+            <select value={announcementType} onChange={e => setAnnouncementType(e.target.value)}
+              style={{ width: "100%", border: `1.5px solid ${T.slate200}`, borderRadius: 8, padding: "8px 12px", fontSize: 13, fontFamily: FONT, background: T.white, color: T.slate800, outline: "none", marginBottom: 8, boxSizing: "border-box" }}>
+              <option value="info">ℹ️ Info</option>
+              <option value="warning">⚠️ Warning</option>
+              <option value="success">✅ Good news</option>
+              <option value="alert">🚨 Alert</option>
+            </select>
+            <textarea value={newAnnouncement} onChange={e => setNewAnnouncement(e.target.value)} placeholder="Type your announcement here…"
+              style={{ width: "100%", border: `1.5px solid ${T.slate200}`, borderRadius: 8, padding: "9px 12px", fontSize: 13, fontFamily: FONT, background: T.white, color: T.slate800, outline: "none", resize: "vertical", minHeight: 80, boxSizing: "border-box", marginBottom: 8 }} />
+            {annSuccess && <p style={{ color: T.green, fontSize: 12, margin: "0 0 8px", fontWeight: 600 }}>✓ {annSuccess}</p>}
+            <Btn onClick={postAnnouncement} disabled={savingAnn || !newAnnouncement.trim()} full>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              {savingAnn ? "Posting…" : "Post to All Users"}
+            </Btn>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {announcements.length === 0 && <p style={{ color: T.slate400, fontSize: 13, textAlign: "center", padding: 16 }}>No announcements yet.</p>}
+            {announcements.map(ann => {
+              const typeStyles = {
+                info: { bg: "rgba(2,132,199,0.08)", border: "rgba(2,132,199,0.2)", color: T.tealDark, emoji: "ℹ️" },
+                warning: { bg: "rgba(217,119,6,0.08)", border: "rgba(217,119,6,0.2)", color: "#B45309", emoji: "⚠️" },
+                success: { bg: "rgba(5,150,105,0.08)", border: "rgba(5,150,105,0.2)", color: "#047857", emoji: "✅" },
+                alert: { bg: "rgba(220,38,38,0.08)", border: "rgba(220,38,38,0.2)", color: T.red, emoji: "🚨" },
+              };
+              const ts = typeStyles[ann.type] || typeStyles.info;
+              return (
+                <div key={ann.id} style={{ background: ts.bg, border: `1px solid ${ts.border}`, borderRadius: 12, padding: "12px 14px" }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 13, color: ts.color, fontWeight: 600, marginBottom: 4 }}>{ts.emoji} {ann.text}</div>
+                      <div style={{ fontSize: 11, color: T.slate400 }}>Posted by {ann.author} · {ann.createdAt ? new Date(ann.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : ""}</div>
+                    </div>
+                    <button onClick={() => deleteAnnouncement(ann.id)} style={{ padding: "4px 8px", borderRadius: 6, border: "none", background: "rgba(220,38,38,0.1)", color: T.red, cursor: "pointer", fontSize: 11, fontWeight: 600, flexShrink: 0 }}>Delete</button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── TEACHERS ── */}
+      {activeSection === "teachers" && (
+        <div>
+          <div style={{ ...glassCard, padding: "14px 16px" }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#1A2744", marginBottom: 10 }}>Teaching Team ({teachers.length})</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              {teachers.length === 0 && <p style={{ color: T.slate400, fontSize: 13 }}>No teachers yet.</p>}
+              {teachers.map(t => (
+                <div key={t.uid} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", background: "rgba(255,255,255,0.6)", borderRadius: 10, border: "1px solid rgba(255,255,255,0.9)" }}>
+                  <Avatar child={{ name: t.name }} size={36} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 700, fontSize: 13, color: "#1A2744" }}>{t.name}</div>
+                    <div style={{ fontSize: 11, color: T.slate400 }}>{t.email}</div>
+                  </div>
+                  {t.email === ADMIN_EMAIL && (
+                    <span style={{ background: "rgba(124,58,237,0.1)", color: "#7C3AED", fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 20, textTransform: "uppercase", letterSpacing: ".05em" }}>Super Admin</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1449,7 +1751,7 @@ function AdminPanel({ currentUser, children = [], attendance = {}, sessionKey = 
       {/* ── 1. CURRENT TEACHERS ───────────────────────── */}
       <div style={{ marginBottom: 16 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-          <h4 style={{ margin: 0, fontSize: 13, fontWeight: 600, color: T.slate800 }}>Teachers ({teachers.length})</h4>
+          <h4 style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#1A2744" }}>Teachers ({teachers.length})</h4>
         </div>
 
         {!teachers.find(t => t.uid === currentUser.uid) && (
@@ -1465,7 +1767,7 @@ function AdminPanel({ currentUser, children = [], attendance = {}, sessionKey = 
         {teachers.length === 0 && <p style={{ color: T.slate400, fontSize: 13 }}>No teachers added yet.</p>}
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           {teachers.map(t => (
-            <div key={t.uid} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", background: T.white, borderRadius: 8, border: `1px solid ${T.slate200}` }}>
+            <div key={t.uid} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", background: "rgba(255,255,255,0.88)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderRadius: 10, border: "1px solid rgba(255,255,255,0.95)", boxShadow: "0 1px 6px rgba(26,39,68,0.06)" }}>
               <Avatar child={{ name: t.name }} size={30} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontWeight: 500, fontSize: 13, color: T.slate800 }}>{t.name} {t.uid === currentUser.uid && <Badge label="You" bg={T.tealLight} color={T.tealDark} />}</div>
@@ -1478,8 +1780,8 @@ function AdminPanel({ currentUser, children = [], attendance = {}, sessionKey = 
       </div>
 
       {/* ── 2. INVITE NEW TEACHER ──────────────────────── */}
-      <div style={{ background: T.slate50, border: `1px solid ${T.slate200}`, borderRadius: 10, padding: 12, marginBottom: 16 }}>
-        <h4 style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 600, color: T.slate800 }}>Invite a New Teacher</h4>
+      <div style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid rgba(255,255,255,0.95)", borderRadius: 14, padding: 14, marginBottom: 16, boxShadow: "0 2px 10px rgba(26,39,68,0.07)" }}>
+        <h4 style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 700, color: "#1A2744" }}>Invite a New Teacher</h4>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 10px" }}>
           <div>
             <label style={lbl}>Name</label>
@@ -1896,11 +2198,13 @@ function Sidebar({ tab, setTab, teacherName, onSignOut, isAdmin, mobile, onClose
               <Icon name="settings" size={16} color={tab === "admin" ? "#fff" : T.slate500} />
               Admin
             </button>
-            <a href="/admin" target="_blank" rel="noopener noreferrer"
-              style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 12px", borderRadius: 8, border: "none", background: "transparent", color: T.slate400, cursor: "pointer", fontSize: 14, fontFamily: FONT, fontWeight: 400, textAlign: "left", textDecoration: "none", transition: "all .15s" }}>
-              <Icon name="share" size={16} color={T.slate500} />
-              Super Admin Portal ↗
-            </a>
+            <button onClick={() => { setTab("superadmin"); if (mobile) onClose(); }}
+              style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 12px", borderRadius: 8, border: "none", background: tab === "superadmin" ? "#7C3AED" : "transparent", color: tab === "superadmin" ? "#fff" : T.slate400, cursor: "pointer", fontSize: 14, fontFamily: FONT, fontWeight: tab === "superadmin" ? 500 : 400, textAlign: "left", transition: "all .15s" }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L13.09 8.26L19 7L15.45 11.86L21 14L15.45 16.14L19 21L13.09 15.74L12 22L10.91 15.74L5 21L8.55 16.14L3 14L8.55 11.86L5 7L10.91 8.26L12 2Z" stroke={tab === "superadmin" ? "#fff" : "#9CA3AF"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              Super Admin
+            </button>
           </>
         )}
       </nav>
@@ -2231,37 +2535,37 @@ export default function App() {
                 const juniorsTotal = children.filter(c => liveAge(c) >= 6).length;
                 return (<>
                   {/* Section 1: Today's attendance */}
-                  <div style={{ marginBottom: 8 }}>
-                    <p style={{ fontSize: 11, fontWeight: 600, color: T.slate400, textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 10 }}>Today's Attendance</p>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: 12, marginBottom: 20 }}>
+                  <div style={{ marginBottom: 16 }}>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: T.slate500, textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 10 }}>Today's Attendance</p>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: 10, marginBottom: 16 }}>
                       {[
-                        { label: "Present Now", value: checkedInNow, color: T.teal, bg: T.tealLight },
-                        { label: sundayLabel, value: totalToday, color: T.blue, bg: T.blueLight },
-                        { label: "Nursery (0-5) Present", value: nurseryPresent, color: "#0369A1", bg: "#E0F2FE" },
-                        { label: "Juniors (6-11) Present", value: juniorsPresent, color: "#166534", bg: "#F0FDF4" },
+                        { label: "Present Now", value: checkedInNow, accent: T.teal, accentBg: "rgba(2,132,199,0.09)" },
+                        { label: sundayLabel, value: totalToday, accent: T.blue, accentBg: "rgba(37,99,235,0.09)" },
+                        { label: "Nursery Present", value: nurseryPresent, accent: "#7C3AED", accentBg: "rgba(124,58,237,0.09)" },
+                        { label: "Juniors Present", value: juniorsPresent, accent: "#059669", accentBg: "rgba(5,150,105,0.09)" },
                       ].map(s => (
-                        <div key={s.label} style={{ background: T.white, borderRadius: 12, padding: "18px 16px", border: `1px solid ${T.slate200}`, boxShadow: "0 1px 3px rgba(0,0,0,.04)" }}>
-                          <div style={{ fontSize: 28, fontWeight: 700, color: s.color, marginBottom: 4 }}>{s.value}</div>
-                          <div style={{ fontSize: 12, color: T.slate500, fontWeight: 500 }}>{s.label}</div>
+                        <div key={s.label} style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderRadius: 14, padding: "14px 16px", border: "1px solid rgba(255,255,255,0.95)", boxShadow: "0 2px 10px rgba(26,39,68,0.07)" }}>
+                          <div style={{ fontSize: 30, fontWeight: 800, color: s.accent, lineHeight: 1, marginBottom: 4 }}>{s.value}</div>
+                          <div style={{ fontSize: 11, fontWeight: 600, color: T.slate500, textTransform: "uppercase", letterSpacing: ".05em" }}>{s.label}</div>
                         </div>
                       ))}
                     </div>
                   </div>
 
                   {/* Section 2: Registered children */}
-                  <div style={{ marginBottom: 20 }}>
-                    <p style={{ fontSize: 11, fontWeight: 600, color: T.slate400, textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 10 }}>Registered Children</p>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: 12, marginBottom: 20 }}>
+                  <div style={{ marginBottom: 16 }}>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: T.slate500, textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 10 }}>Registered Children</p>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 10, marginBottom: 16 }}>
                       {[
-                        { label: "Total Registered", value: children.length, color: T.slate700, bg: T.slate100 },
-                        { label: "Members", value: children.filter(c => !c.visitor).length, color: T.teal, bg: T.tealLight },
-                        { label: "Visitors", value: children.filter(c => c.visitor).length, color: "#7C3AED", bg: "#F5F3FF" },
-                        { label: "Nursery (0–5)", value: nurseryTotal, color: "#0369A1", bg: "#E0F2FE" },
-                        { label: "Juniors (6–11)", value: juniorsTotal, color: "#166534", bg: "#F0FDF4" },
+                        { label: "Total", value: children.length, accent: T.slate700 },
+                        { label: "Members", value: children.filter(c => !c.visitor).length, accent: T.teal },
+                        { label: "Visitors", value: children.filter(c => c.visitor).length, accent: "#7C3AED" },
+                        { label: "Nursery", value: nurseryTotal, accent: "#0369A1" },
+                        { label: "Juniors", value: juniorsTotal, accent: "#059669" },
                       ].map(s => (
-                        <div key={s.label} style={{ background: T.white, borderRadius: 12, padding: "18px 16px", border: `1px solid ${T.slate200}`, boxShadow: "0 1px 3px rgba(0,0,0,.04)" }}>
-                          <div style={{ fontSize: 28, fontWeight: 700, color: s.color, marginBottom: 4 }}>{s.value}</div>
-                          <div style={{ fontSize: 12, color: T.slate500, fontWeight: 500 }}>{s.label}</div>
+                        <div key={s.label} style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderRadius: 14, padding: "14px 16px", border: "1px solid rgba(255,255,255,0.95)", boxShadow: "0 2px 10px rgba(26,39,68,0.07)" }}>
+                          <div style={{ fontSize: 30, fontWeight: 800, color: s.accent, lineHeight: 1, marginBottom: 4 }}>{s.value}</div>
+                          <div style={{ fontSize: 11, fontWeight: 600, color: T.slate500, textTransform: "uppercase", letterSpacing: ".05em" }}>{s.label}</div>
                         </div>
                       ))}
                     </div>
@@ -2269,40 +2573,40 @@ export default function App() {
                 </>);
               })()}
 
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16, marginBottom: 16 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 14, marginBottom: 14 }}>
                 {/* Gender split */}
-                <div style={{ background: T.white, borderRadius: 12, padding: 20, border: `1px solid ${T.slate200}` }}>
-                  <h3 style={{ margin: "0 0 4px", fontSize: 14, fontWeight: 600, color: T.slate800 }}>Boys vs Girls</h3>
+                <div style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderRadius: 16, padding: 20, border: "1px solid rgba(255,255,255,0.95)", boxShadow: "0 2px 12px rgba(26,39,68,0.07)" }}>
+                  <h3 style={{ margin: "0 0 2px", fontSize: 14, fontWeight: 700, color: "#1A2744" }}>Boys vs Girls</h3>
                   <p style={{ margin: "0 0 12px", fontSize: 12, color: T.slate400 }}>All registered children</p>
                   <GenderPieChart children={children} />
                 </div>
                 {/* Age group split */}
-                <div style={{ background: T.white, borderRadius: 12, padding: 20, border: `1px solid ${T.slate200}` }}>
-                  <h3 style={{ margin: "0 0 4px", fontSize: 14, fontWeight: 600, color: T.slate800 }}>Nursery vs Juniors</h3>
+                <div style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderRadius: 16, padding: 20, border: "1px solid rgba(255,255,255,0.95)", boxShadow: "0 2px 12px rgba(26,39,68,0.07)" }}>
+                  <h3 style={{ margin: "0 0 2px", fontSize: 14, fontWeight: 700, color: "#1A2744" }}>Nursery vs Juniors</h3>
                   <p style={{ margin: "0 0 12px", fontSize: 12, color: T.slate400 }}>All registered children</p>
                   <GroupDonutChart children={children} />
                 </div>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 14 }}>
                 {/* Attendance chart */}
-                <div style={{ background: T.white, borderRadius: 12, padding: 20, border: `1px solid ${T.slate200}` }}>
-                  <h3 style={{ margin: "0 0 16px", fontSize: 14, fontWeight: 600, color: T.slate800 }}>Attendance — Last 12 Sundays</h3>
+                <div style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderRadius: 16, padding: 20, border: "1px solid rgba(255,255,255,0.95)", boxShadow: "0 2px 12px rgba(26,39,68,0.07)" }}>
+                  <h3 style={{ margin: "0 0 16px", fontSize: 14, fontWeight: 700, color: "#1A2744" }}>Attendance — Last 12 Sundays</h3>
                   <AttendanceChart attendance={attendance} />
                 </div>
 
                 {/* Alerts */}
-                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                   {birthdays.length > 0 && (
-                    <div style={{ background: T.white, borderRadius: 12, padding: 20, border: `1px solid ${T.slate200}` }}>
-                      <h3 style={{ margin: "0 0 12px", fontSize: 14, fontWeight: 600, color: T.slate800, display: "flex", alignItems: "center", gap: 8 }}>
+                    <div style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderRadius: 16, padding: 20, border: "1px solid rgba(255,255,255,0.95)", boxShadow: "0 2px 12px rgba(26,39,68,0.07)" }}>
+                      <h3 style={{ margin: "0 0 12px", fontSize: 14, fontWeight: 700, color: "#1A2744", display: "flex", alignItems: "center", gap: 8 }}>
                         <Icon name="birthday" size={16} color="#D97706" />Birthdays This Week
                       </h3>
                       {birthdays.map(c => (
                         <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
                           <ChildAvatar child={c} size={32} />
                           <div>
-                            <div style={{ fontSize: 13, fontWeight: 500, color: T.slate800 }}>{c.name}</div>
+                            <div style={{ fontSize: 13, fontWeight: 600, color: "#1A2744" }}>{c.name}</div>
                             <div style={{ fontSize: 12, color: T.slate400 }}>Turns {liveAge(c) + 1}</div>
                           </div>
                         </div>
@@ -2311,15 +2615,15 @@ export default function App() {
                   )}
 
                   {absentees.length > 0 && (
-                    <div style={{ background: T.white, borderRadius: 12, padding: 20, border: `1px solid ${T.slate200}` }}>
-                      <h3 style={{ margin: "0 0 12px", fontSize: 14, fontWeight: 600, color: T.slate800, display: "flex", alignItems: "center", gap: 8 }}>
+                    <div style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderRadius: 16, padding: 20, border: "1px solid rgba(255,255,255,0.95)", boxShadow: "0 2px 12px rgba(26,39,68,0.07)" }}>
+                      <h3 style={{ margin: "0 0 12px", fontSize: 14, fontWeight: 700, color: "#1A2744", display: "flex", alignItems: "center", gap: 8 }}>
                         <Icon name="alert" size={16} color={T.red} />Absent 3+ Weeks
                       </h3>
                       {absentees.map(c => (
                         <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
                           <ChildAvatar child={c} size={32} />
                           <div>
-                            <div style={{ fontSize: 13, fontWeight: 500, color: T.slate800 }}>{c.name}</div>
+                            <div style={{ fontSize: 13, fontWeight: 600, color: "#1A2744" }}>{c.name}</div>
                             <div style={{ fontSize: 12, color: T.red }}>{weeksAbsent(c.id, attendance, c.enrolled)} weeks absent</div>
                           </div>
                         </div>
@@ -2771,6 +3075,10 @@ export default function App() {
           {/* ── ADMIN ────────────────────────────────────────────────────────── */}
           {tab === "admin" && isAdmin && (
             <AdminPanel currentUser={user} children={children} attendance={attendance} sessionKey={sessionKey} />
+          )}
+
+          {tab === "superadmin" && isAdmin && (
+            <SuperAdminPortal children={children} attendance={attendance} sessionKey={sessionKey} currentUser={user} />
           )}
 
         </div>
