@@ -193,7 +193,7 @@ function weeksAbsent(childId, attendance, enrolled) {
 // DESIGN TOKENS
 // ─────────────────────────────────────────────────────────────────────────────
 const T = {
-  bg: "#F0F7FF",
+  bg: "#EDF4FB",
   sidebar: "#1A2744",
   sidebarAccent: "#253258",
   white: "#FFFFFF",
@@ -223,8 +223,8 @@ const T = {
   purple: "#7C3AED",
   purpleLight: "#EDE9FE",
 };
-const FONT = "'DM Sans', sans-serif";
-const SERIF = "'DM Serif Display', serif";
+const FONT = "'Plus Jakarta Sans', 'DM Sans', sans-serif";
+const SERIF = "'Plus Jakarta Sans', 'DM Serif Display', serif";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SVG ICONS
@@ -2105,7 +2105,7 @@ export default function App() {
   // Loading
   if (authLoading) return (
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: T.slate900, fontFamily: FONT }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap'); * { box-sizing: border-box; } @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}`}</style>
+      <style>{`* { box-sizing: border-box; } @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}`}</style>
       <div style={{ textAlign: "center", color: T.slate400 }}>
         <div style={{ width: 32, height: 32, border: `3px solid ${T.teal}`, borderTopColor: "transparent", borderRadius: "50%", animation: "spin 1s linear infinite", margin: "0 auto 16px" }} />
         <p style={{ fontSize: 14 }}>Loading…</p>
@@ -2116,13 +2116,13 @@ export default function App() {
   if (!user) return <LoginScreen />;
 
   const STYLES = `
-    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap');
     * { box-sizing: border-box; margin: 0; padding: 0; }
     @keyframes slideUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:none} }
     @keyframes spin { from{transform:rotate(0)} to{transform:rotate(360deg)} }
     ::-webkit-scrollbar { width: 6px } ::-webkit-scrollbar-thumb { background: ${T.slate300}; border-radius: 3px }
     input:focus, textarea:focus, select:focus { outline: none; border-color: ${T.teal} !important; box-shadow: 0 0 0 3px ${T.teal}20 !important; }
-    button:hover { opacity: .9; }
+    button:hover { filter: brightness(0.96); }
+    .checkin-child-card:hover { box-shadow: 0 6px 20px rgba(26,39,68,0.12) !important; transform: translateY(-1px); }
     @media (max-width: 768px) {
       .sidebar { display: none !important; }
       .main-content { margin-left: 0 !important; padding-bottom: 80px !important; }
@@ -2137,6 +2137,9 @@ export default function App() {
     @media (max-width: 768px) {
       .desktop-alerts { display: none !important; }
       .mobile-alerts { display: flex !important; }
+    }
+    @media (max-width: 900px) {
+      .checkin-stats { grid-template-columns: repeat(2, 1fr) !important; }
     }
     /* Prevent horizontal overflow on mobile */
     @media (max-width: 480px) {
@@ -2328,96 +2331,153 @@ export default function App() {
           {/* ── CHECK-IN ─────────────────────────────────────────────────────── */}
           {tab === "checkin" && (
             <div>
-              {/* Stat widgets — checked in counts */}
+              {/* ── STAT CARDS ── */}
               {(() => {
                 const nurseryPresent = children.filter(c => liveAge(c) <= 5 && sessionAtt[c.id]?.in && !sessionAtt[c.id]?.out).length;
                 const juniorsPresent = children.filter(c => liveAge(c) >= 6 && sessionAtt[c.id]?.in && !sessionAtt[c.id]?.out).length;
+                const stats = [
+                  { label: "Present Now", value: checkedInNow, accent: "#0284C7", accentBg: "rgba(2,132,199,0.08)", icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" },
+                  { label: sundayLabel, value: totalToday, accent: "#0369A1", accentBg: "rgba(3,105,161,0.08)", icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" },
+                  { label: "Nursery", value: nurseryPresent, accent: "#7C3AED", accentBg: "rgba(124,58,237,0.08)", icon: "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" },
+                  { label: "Juniors", value: juniorsPresent, accent: "#059669", accentBg: "rgba(5,150,105,0.08)", icon: "M13 10V3L4 14h7v7l9-11h-7z" },
+                ];
                 return (
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 20 }}>
-                    {[
-                      { label: "Present Now", value: checkedInNow, color: T.teal, bg: T.tealLight },
-                      { label: sundayLabel, value: totalToday, color: T.blue, bg: T.blueLight },
-                      { label: "Nursery (0-5) Present", value: nurseryPresent, color: "#0369A1", bg: "#E0F2FE" },
-                      { label: "Juniors (6-11) Present", value: juniorsPresent, color: "#166534", bg: "#F0FDF4" },
-                    ].map(s => (
-                      <div key={s.label} style={{ background: T.white, borderRadius: 12, padding: "14px 12px", border: `1px solid ${T.slate200}`, boxShadow: "0 1px 3px rgba(0,0,0,.04)" }}>
-                        <div style={{ fontSize: 26, fontWeight: 700, color: s.color, marginBottom: 2 }}>{s.value}</div>
-                        <div style={{ fontSize: 11, color: T.slate500, fontWeight: 500, lineHeight: 1.3 }}>{s.label}</div>
+                  <div className="checkin-stats" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 24 }}>
+                    {stats.map(s => (
+                      <div key={s.label} style={{
+                        background: "rgba(255,255,255,0.88)",
+                        backdropFilter: "blur(16px)",
+                        WebkitBackdropFilter: "blur(16px)",
+                        borderRadius: 16,
+                        padding: "16px 14px",
+                        border: "1px solid rgba(255,255,255,0.95)",
+                        boxShadow: "0 2px 12px rgba(26,39,68,0.08)",
+                      }}>
+                        <div style={{
+                          width: 32, height: 32, borderRadius: 10,
+                          background: s.accentBg,
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          marginBottom: 10,
+                        }}>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                            <path d={s.icon} stroke={s.accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </div>
+                        <div style={{ fontSize: 28, fontWeight: 800, color: "#1A2744", lineHeight: 1, marginBottom: 4 }}>{s.value}</div>
+                        <div style={{ fontSize: 11, fontWeight: 600, color: T.slate500, textTransform: "uppercase", letterSpacing: ".06em" }}>{s.label}</div>
                       </div>
                     ))}
                   </div>
                 );
               })()}
 
-              {/* Search + Scan */}
-              <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
+              {/* ── SEARCH + SCAN ── */}
+              <div style={{ display: "flex", gap: 10, marginBottom: 24 }}>
                 <div style={{ position: "relative", flex: 1 }}>
                   <div style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }}><Icon name="search" size={16} color={T.slate400} /></div>
                   <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search children..."
-                    style={{ width: "100%", padding: "10px 12px 10px 38px", border: `1.5px solid ${T.slate200}`, borderRadius: 10, fontSize: 14, fontFamily: FONT, background: T.white, outline: "none" }} />
+                    style={{ width: "100%", padding: "11px 12px 11px 40px", border: "1.5px solid rgba(255,255,255,0.95)", borderRadius: 12, fontSize: 14, fontFamily: FONT, background: "rgba(255,255,255,0.88)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", outline: "none", boxShadow: "0 2px 8px rgba(26,39,68,0.06)", color: "#1A2744" }} />
                 </div>
-                <Btn onClick={() => setModal({ type: "scanner" })} style={{ flexShrink: 0, background: T.teal, color: "#fff", border: "none" }}>
-                  <Icon name="scan" size={16} color="#fff" />Scan QR
-                </Btn>
+                <button onClick={() => setModal({ type: "scanner" })} style={{
+                  display: "flex", alignItems: "center", gap: 8,
+                  padding: "0 16px", borderRadius: 12, border: "1.5px solid rgba(2,132,199,0.3)",
+                  background: "rgba(2,132,199,0.08)", color: "#0284C7",
+                  fontSize: 14, fontWeight: 600, fontFamily: FONT, cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap",
+                }}>
+                  <Icon name="scan" size={16} color="#0284C7" /> Scan QR
+                </button>
               </div>
 
               {dataLoading && <div style={{ textAlign: "center", padding: 60, color: T.slate400 }}>Loading…</div>}
 
-              {/* Group by age */}
+              {/* ── GROUP: Nursery + Juniors ── */}
               {["Nursery", "Juniors"].map(groupName => {
                 const groupChildren = filtered.filter(c => getAgeGroup(liveAge(c))?.label === groupName);
                 if (!groupChildren.length) return null;
+                const groupAccent = groupName === "Nursery" ? "#7C3AED" : "#059669";
+                const groupAccentBg = groupName === "Nursery" ? "rgba(124,58,237,0.08)" : "rgba(5,150,105,0.08)";
+                const presentCount = groupChildren.filter(c => sessionAtt[c.id]?.in && !sessionAtt[c.id]?.out).length;
                 return (
-                  <div key={groupName === "Nursery" ? "Nursery (0–5)" : "Juniors (6–11)"} style={{ marginBottom: 28 }}>
+                  <div key={groupName} style={{ marginBottom: 28 }}>
+                    {/* Section header */}
                     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                      <h3 style={{ margin: 0, fontSize: 13, fontWeight: 600, color: T.slate500, textTransform: "uppercase", letterSpacing: ".08em" }}>{groupName === "Nursery" ? "Nursery (0–5)" : "Juniors (6–11)"}</h3>
+                      <div style={{ width: 8, height: 8, borderRadius: "50%", background: groupAccent, flexShrink: 0 }} />
+                      <h3 style={{ margin: 0, fontSize: 12, fontWeight: 700, color: T.slate500, textTransform: "uppercase", letterSpacing: ".08em" }}>
+                        {groupName === "Nursery" ? "Nursery (0–5)" : "Juniors (6–11)"}
+                      </h3>
                       <div style={{ flex: 1, height: 1, background: T.slate200 }} />
-                      <span style={{ fontSize: 12, color: T.slate400 }}>{groupChildren.filter(c => sessionAtt[c.id]?.in && !sessionAtt[c.id]?.out).length}/{groupChildren.length} present</span>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: groupAccent, background: groupAccentBg, padding: "3px 10px", borderRadius: 20 }}>
+                        {presentCount}/{groupChildren.length} present
+                      </span>
                     </div>
+
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                       {groupChildren.map(child => {
                         const rec = sessionAtt[child.id];
                         const isIn = rec?.in && !rec?.out;
                         const isDone = rec?.in && rec?.out;
                         const hasMedical = child.medical && child.medical !== "No known conditions";
+
+                        // Card border/bg based on state
+                        let cardBorder = "1px solid rgba(255,255,255,0.95)";
+                        let cardBg = "rgba(255,255,255,0.88)";
+                        if (isIn) { cardBorder = "1px solid rgba(5,150,105,0.3)"; cardBg = "rgba(5,150,105,0.04)"; }
+                        else if (hasMedical) { cardBorder = "1px solid rgba(245,158,11,0.4)"; cardBg = "rgba(255,251,235,0.92)"; }
+
                         return (
-                          <div key={child.id} style={{ background: T.white, borderRadius: 12, padding: "14px 16px", display: "flex", alignItems: "center", gap: 14, border: `1px solid ${hasMedical && !isIn && !isDone ? "#FDE68A" : isIn ? T.teal + "40" : T.slate200}`, boxShadow: "0 1px 3px rgba(0,0,0,.04)", background: isIn ? `${T.teal}05` : hasMedical && !isIn && !isDone ? "#FFFBEB" : T.white }}>
+                          <div key={child.id} style={{
+                            background: cardBg,
+                            backdropFilter: "blur(16px)",
+                            WebkitBackdropFilter: "blur(16px)",
+                            borderRadius: 14,
+                            padding: "14px 16px",
+                            display: "flex", alignItems: "center", gap: 14,
+                            border: cardBorder,
+                            boxShadow: isIn ? "0 2px 10px rgba(5,150,105,0.10)" : "0 2px 8px rgba(26,39,68,0.06)",
+                            transition: "box-shadow .15s, transform .15s",
+                          }}>
                             <ChildAvatar child={child} size={44} />
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                                <span style={{ fontWeight: 600, fontSize: 15, color: T.slate900 }}>{child.name}</span>
+                                <span style={{ fontWeight: 700, fontSize: 15, color: "#1A2744" }}>{child.name}</span>
                                 {child.medical && child.medical !== "No known conditions" && <MedicalBadge />}
-                                {isBirthdayThisWeek(child.dob) && <Badge label="Birthday" bg="#FEF9C3" color="#854D0E" />}
+                                {isBirthdayThisWeek(child.dob) && <Badge label="🎂 Birthday" bg="#FEF9C3" color="#854D0E" />}
                               </div>
                               <div style={{ fontSize: 12, color: T.slate400, marginTop: 2 }}>Age {liveAge(child)} · {child.gender}</div>
                               {hasMedical && !isIn && !isDone && (
-                                <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 5, background: "#FEF3C7", borderRadius: 6, padding: "3px 8px", width: "fit-content" }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 6, background: "#FEF3C7", borderRadius: 8, padding: "4px 10px", width: "fit-content" }}>
                                   <Icon name="alert" size={12} color="#D97706" />
                                   <span style={{ fontSize: 12, color: "#92400E", fontWeight: 600 }}>{child.medical}</span>
                                 </div>
                               )}
                               {rec && (
-                                <div style={{ fontSize: 12, marginTop: 4, lineHeight: 1.7 }}>
-                                  <span style={{ color: T.teal, fontWeight: 500 }}>In: {rec.in}</span>
-                                  {rec.inTeacher && <span style={{ color: T.slate400, fontStyle: "italic" }}> · {rec.inTeacher}</span>}
-                                  {rec.out && (
-                                    <><br/>
-                                    <span style={{ color: T.coral, fontWeight: 500 }}>Out: {rec.out}</span>
-                                    {rec.outTeacher && <span style={{ color: T.slate400, fontStyle: "italic" }}> · {rec.outTeacher}</span>}
-                                    </>
-                                  )}
+                                <div style={{ fontSize: 12, marginTop: 5, lineHeight: 1.7 }}>
+                                  <span style={{ color: "#0284C7", fontWeight: 600 }}>In {rec.in}</span>
+                                  {rec.inTeacher && <span style={{ color: T.slate400 }}> · {rec.inTeacher}</span>}
+                                  {rec.out && (<><span style={{ color: T.slate400 }}> · </span><span style={{ color: T.coral, fontWeight: 600 }}>Out {rec.out}</span>{rec.outTeacher && <span style={{ color: T.slate400 }}> · {rec.outTeacher}</span>}</>)}
                                 </div>
                               )}
                             </div>
-                            <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end" }}>
-                              {!rec && <Btn small onClick={() => toggleIn(child.id)}>Check In</Btn>}
+                            <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end", flexShrink: 0 }}>
+                              {!rec && (
+                                <button onClick={() => toggleIn(child.id)} style={{
+                                  padding: "7px 14px", borderRadius: 10,
+                                  background: "linear-gradient(135deg,#1A2744,#0369A1)",
+                                  color: "#fff", border: "none", fontSize: 12, fontWeight: 700,
+                                  fontFamily: FONT, cursor: "pointer", whiteSpace: "nowrap",
+                                }}>Check In</button>
+                              )}
                               {isIn && (
                                 <>
-                                  <Badge label="Present" bg={T.greenLight} color={T.green} />
-                                  <Btn variant="secondary" small onClick={() => setCollectorModal({ childId: child.id })}>Check Out</Btn>
+                                  <span style={{ fontSize: 11, fontWeight: 700, color: "#059669", background: "#D1FAE5", padding: "3px 10px", borderRadius: 8 }}>Present</span>
+                                  <button onClick={() => setCollectorModal({ childId: child.id })} style={{
+                                    padding: "6px 12px", borderRadius: 9, fontSize: 12, fontWeight: 600,
+                                    background: "rgba(239,68,68,0.08)", color: "#EF4444",
+                                    border: "1px solid rgba(239,68,68,0.2)", fontFamily: FONT, cursor: "pointer",
+                                  }}>Check Out</button>
                                 </>
                               )}
-                              {isDone && <Badge label="Checked Out" bg={T.slate100} color={T.slate500} />}
+                              {isDone && <span style={{ fontSize: 11, fontWeight: 700, color: T.slate500, background: T.slate100, padding: "3px 10px", borderRadius: 8 }}>Checked Out</span>}
                             </div>
                           </div>
                         );
@@ -2427,11 +2487,11 @@ export default function App() {
                 );
               })}
 
-              {/* Unassigned (no age) */}
+              {/* ── Unassigned (no age) ── */}
               {filtered.filter(c => !getAgeGroup(liveAge(c))).length > 0 && (
                 <div style={{ marginBottom: 28 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                    <h3 style={{ margin: 0, fontSize: 13, fontWeight: 600, color: T.slate400, textTransform: "uppercase", letterSpacing: ".08em" }}>No Age Group</h3>
+                    <h3 style={{ margin: 0, fontSize: 12, fontWeight: 700, color: T.slate400, textTransform: "uppercase", letterSpacing: ".08em" }}>No Age Group</h3>
                     <div style={{ flex: 1, height: 1, background: T.slate200 }} />
                   </div>
                   {filtered.filter(c => !getAgeGroup(liveAge(c))).map(child => {
@@ -2439,16 +2499,16 @@ export default function App() {
                     const isIn = rec?.in && !rec?.out;
                     const isDone = rec?.in && rec?.out;
                     return (
-                      <div key={child.id} style={{ background: T.white, borderRadius: 12, padding: "14px 16px", display: "flex", alignItems: "center", gap: 14, border: `1px solid ${T.slate200}`, marginBottom: 8 }}>
+                      <div key={child.id} style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderRadius: 14, padding: "14px 16px", display: "flex", alignItems: "center", gap: 14, border: "1px solid rgba(255,255,255,0.95)", boxShadow: "0 2px 8px rgba(26,39,68,0.06)", marginBottom: 8 }}>
                         <ChildAvatar child={child} size={44} />
                         <div style={{ flex: 1 }}>
-                          <div style={{ fontWeight: 600, fontSize: 15, color: T.slate900 }}>{child.name}</div>
-                          <div style={{ fontSize: 12, color: T.slate400 }}>No age set — please edit profile</div>
+                          <div style={{ fontWeight: 700, fontSize: 15, color: "#1A2744" }}>{child.name}</div>
+                          <div style={{ fontSize: 12, color: T.slate400, marginTop: 2 }}>No age set — please edit profile</div>
                         </div>
                         <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end" }}>
-                          {!rec && <Btn small onClick={() => toggleIn(child.id)}>Check In</Btn>}
-                          {isIn && <><Badge label="Present" bg={T.greenLight} color={T.green} /><Btn variant="secondary" small onClick={() => setCollectorModal({ childId: child.id })}>Check Out</Btn></>}
-                          {isDone && <Badge label="Checked Out" bg={T.slate100} color={T.slate500} />}
+                          {!rec && <button onClick={() => toggleIn(child.id)} style={{ padding: "7px 14px", borderRadius: 10, background: "linear-gradient(135deg,#1A2744,#0369A1)", color: "#fff", border: "none", fontSize: 12, fontWeight: 700, fontFamily: FONT, cursor: "pointer" }}>Check In</button>}
+                          {isIn && <><span style={{ fontSize: 11, fontWeight: 700, color: "#059669", background: "#D1FAE5", padding: "3px 10px", borderRadius: 8 }}>Present</span><button onClick={() => setCollectorModal({ childId: child.id })} style={{ padding: "6px 12px", borderRadius: 9, fontSize: 12, fontWeight: 600, background: "rgba(239,68,68,0.08)", color: "#EF4444", border: "1px solid rgba(239,68,68,0.2)", fontFamily: FONT, cursor: "pointer" }}>Check Out</button></>}
+                          {isDone && <span style={{ fontSize: 11, fontWeight: 700, color: T.slate500, background: T.slate100, padding: "3px 10px", borderRadius: 8 }}>Checked Out</span>}
                         </div>
                       </div>
                     );
