@@ -2642,15 +2642,18 @@ export default function App() {
           {/* ── CALENDAR ─────────────────────────────────────────────────────── */}
           {tab === "calendar" && (
             <div>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <button onClick={() => setCalMonth(p => { const d = new Date(p.y, p.m - 1); return { y: d.getFullYear(), m: d.getMonth() }; })} style={{ background: T.white, border: `1.5px solid ${T.slate200}`, borderRadius: 8, width: 36, height: 36, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: T.slate600 }}>
+              {/* Month nav bar */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <button onClick={() => setCalMonth(p => { const d = new Date(p.y, p.m - 1); return { y: d.getFullYear(), m: d.getMonth() }; })}
+                    style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid rgba(255,255,255,0.95)", borderRadius: 10, width: 36, height: 36, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 1px 4px rgba(26,39,68,0.08)" }}>
                     <span style={{ transform: "rotate(180deg)", display: "inline-flex" }}><Icon name="chevronRight" size={16} color={T.slate600} /></span>
                   </button>
-                  <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600, color: T.slate900 }}>
+                  <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: T.sidebar, letterSpacing: "-0.02em" }}>
                     {new Date(calMonth.y, calMonth.m).toLocaleDateString("en-GB", { month: "long", year: "numeric" })}
                   </h2>
-                  <button onClick={() => setCalMonth(p => { const d = new Date(p.y, p.m + 1); return { y: d.getFullYear(), m: d.getMonth() }; })} style={{ background: T.white, border: `1.5px solid ${T.slate200}`, borderRadius: 8, width: 36, height: 36, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <button onClick={() => setCalMonth(p => { const d = new Date(p.y, p.m + 1); return { y: d.getFullYear(), m: d.getMonth() }; })}
+                    style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid rgba(255,255,255,0.95)", borderRadius: 10, width: 36, height: 36, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 1px 4px rgba(26,39,68,0.08)" }}>
                     <Icon name="chevronRight" size={16} color={T.slate600} />
                   </button>
                 </div>
@@ -2659,6 +2662,7 @@ export default function App() {
                 </Btn>
               </div>
 
+              {/* Sunday cards */}
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {getSundays(calMonth.y, calMonth.m).map((sunday, i) => {
                   const key = dateKey(sunday);
@@ -2666,41 +2670,60 @@ export default function App() {
                   const count = Object.keys(dayAtt).length;
                   const isToday = key === todayKey;
                   const isOpen = calOpen === key;
+                  const nurseryCount = Object.entries(dayAtt).filter(([cid]) => { const c = children.find(x => x.id === cid); return c && liveAge(c) <= 5; }).length;
+                  const juniorsCount = Object.entries(dayAtt).filter(([cid]) => { const c = children.find(x => x.id === cid); return c && liveAge(c) >= 6; }).length;
                   return (
-                    <div key={key} style={{ background: T.white, borderRadius: 12, border: `1px solid ${isToday ? T.teal : T.slate200}`, overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,.04)" }}>
+                    <div key={key} style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: `1px solid ${isToday ? T.teal : "rgba(255,255,255,0.95)"}`, borderRadius: 14, overflow: "hidden", boxShadow: isToday ? `0 0 0 2px ${T.teal}22, 0 2px 12px rgba(26,39,68,0.08)` : "0 2px 8px rgba(26,39,68,0.06)" }}>
                       <div onClick={() => setCalOpen(isOpen ? null : key)} style={{ padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer" }}>
-                        <div>
-                          <div style={{ fontWeight: 600, fontSize: 15, color: T.slate900, display: "flex", alignItems: "center", gap: 8 }}>
-                            {isToday && <span style={{ width: 8, height: 8, borderRadius: "50%", background: T.teal, display: "inline-block" }} />}
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: 700, fontSize: 15, color: T.slate900, display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                            {isToday && <span style={{ width: 8, height: 8, borderRadius: "50%", background: T.teal, display: "inline-block", flexShrink: 0 }} />}
                             {formatDate(sunday)}
+                            {isToday && <span style={{ fontSize: 11, fontWeight: 700, background: T.teal, color: "white", borderRadius: 6, padding: "2px 7px", letterSpacing: "0.04em" }}>TODAY</span>}
                           </div>
-                          <div style={{ fontSize: 13, color: T.slate400, marginTop: 2 }}>
-                            {count > 0 ? `${count} children attended` : "No records"}
-                          </div>
+                          {count > 0 ? (
+                            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                              <span style={{ fontSize: 13, color: T.slate500 }}>{count} children</span>
+                              {nurseryCount > 0 && <span style={{ fontSize: 11, fontWeight: 700, background: "rgba(124,58,237,0.1)", color: "#7C3AED", borderRadius: 6, padding: "2px 7px" }}>Nursery {nurseryCount}</span>}
+                              {juniorsCount > 0 && <span style={{ fontSize: 11, fontWeight: 700, background: "rgba(5,150,105,0.1)", color: "#059669", borderRadius: 6, padding: "2px 7px" }}>Juniors {juniorsCount}</span>}
+                            </div>
+                          ) : (
+                            <span style={{ fontSize: 13, color: T.slate400, fontStyle: "italic" }}>No records yet</span>
+                          )}
                         </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                          {count > 0 && <div style={{ background: T.tealLight, color: T.tealDark, borderRadius: 20, padding: "3px 14px", fontWeight: 600, fontSize: 14 }}>{count}</div>}
-                          <Icon name={isOpen ? "chevronDown" : "chevronRight"} size={16} color={T.slate400} />
+                        <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+                          {count > 0 && (
+                            <div style={{ background: "linear-gradient(135deg,#1A2744,#0369A1)", color: "white", borderRadius: 20, padding: "4px 14px", fontWeight: 700, fontSize: 14, minWidth: 32, textAlign: "center" }}>{count}</div>
+                          )}
+                          <div style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(26,39,68,0.06)", display: "flex", alignItems: "center", justifyContent: "center", transition: "transform .2s", transform: isOpen ? "rotate(90deg)" : "" }}>
+                            <Icon name="chevronRight" size={14} color={T.slate400} />
+                          </div>
                         </div>
                       </div>
 
                       {isOpen && (
-                        <div style={{ borderTop: `1px solid ${T.slate100}`, padding: "12px 20px" }}>
-                          {count === 0 && <p style={{ color: T.slate400, fontSize: 14 }}>No attendance recorded.</p>}
+                        <div style={{ borderTop: "1px solid rgba(26,39,68,0.08)", padding: "12px 20px", background: "rgba(255,255,255,0.5)" }}>
+                          {count === 0 && <p style={{ color: T.slate400, fontSize: 14, fontStyle: "italic", margin: 0 }}>No attendance recorded.</p>}
                           {Object.entries(dayAtt).map(([cid, rec]) => {
                             const child = children.find(c => c.id === cid);
                             if (!child) return null;
+                            const grp = getAgeGroup(liveAge(child));
+                            const accentCol = grp?.label === "Nursery" ? "#7C3AED" : grp?.label === "Juniors" ? "#059669" : T.teal;
                             return (
-                              <div key={cid} style={{ display: "flex", alignItems: "center", gap: 12, padding: "8px 0", borderBottom: `1px solid ${T.slate100}` }}>
-                                <ChildAvatar child={child} size={32} />
-                                <div style={{ flex: 1 }}>
-                                  <div style={{ fontWeight: 500, fontSize: 14, color: T.slate800 }}>{child.name}</div>
-                                  <div style={{ fontSize: 12, color: T.slate400 }}>
-                                    In: {rec.in} {rec.inTeacher && `· ${rec.inTeacher}`}
-                                    {rec.out && ` · Out: ${rec.out} ${rec.outTeacher ? `· ${rec.outTeacher}` : ""}`}
+                              <div key={cid} style={{ display: "flex", alignItems: "center", gap: 12, padding: "9px 0", borderBottom: "1px solid rgba(26,39,68,0.06)" }}>
+                                <ChildAvatar child={child} size={34} />
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <div style={{ fontWeight: 600, fontSize: 14, color: T.slate800 }}>{child.name}</div>
+                                  <div style={{ fontSize: 12, color: T.slate400, marginTop: 2 }}>
+                                    <span style={{ color: "#059669", fontWeight: 600 }}>In {rec.in}</span>
+                                    {rec.inTeacher && <span> · {rec.inTeacher}</span>}
+                                    {rec.out && <><span style={{ color: T.slate300 }}> · </span><span style={{ color: "#DC2626", fontWeight: 600 }}>Out {rec.out}</span>{rec.outTeacher && <span> · {rec.outTeacher}</span>}</>}
                                   </div>
                                 </div>
-                                {!rec.out && <Badge label="Still here" bg={T.greenLight} color={T.green} />}
+                                <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                                  {grp && <span style={{ fontSize: 11, fontWeight: 700, background: `${accentCol}18`, color: accentCol, borderRadius: 6, padding: "2px 7px" }}>{grp.label}</span>}
+                                  {!rec.out && <Badge label="Present" bg={T.greenLight} color={T.green} />}
+                                </div>
                               </div>
                             );
                           })}
