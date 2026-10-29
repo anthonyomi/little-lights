@@ -193,7 +193,7 @@ function weeksAbsent(childId, attendance, enrolled) {
 // DESIGN TOKENS
 // ─────────────────────────────────────────────────────────────────────────────
 const T = {
-  bg: "#C8DCF0",
+  bg: "#DAEAF6",
   sidebar: "#1A2744",
   sidebarAccent: "#253258",
   white: "#FFFFFF",
