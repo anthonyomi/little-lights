@@ -49,9 +49,9 @@ function LittleLightsLogo({ size = "full", theme = "dark", scale = 1 }) {
   // Icon uses exact brand SVG paths from the official Little Lights brand kit
 
   const iconSize = (size === "compact" ? 36 : size === "icon" ? 44 : 52) * scale;
-  // The brand SVG uses a 280-unit coordinate space (translate 0,0 scale 1.82 on a 1080 canvas → centre at 540)
-  // We render the icon group directly, scaling to fit iconSize
-  const S = iconSize / 280; // scale factor from brand coords to pixels
+  // Brand geometry is centred at (0,0) and extends to ±153 (ray tips + stroke half-width ~6)
+  // Use viewBox "-159 -159 318 318" so SVG's own scaling fills the element perfectly
+  const VB = 159;
 
   const rayColor = theme === "teal" ? "rgba(255,255,255,0.7)" : "#FFCF58";
   const outerRingFill = "#3B5269";
@@ -63,33 +63,27 @@ function LittleLightsLogo({ size = "full", theme = "dark", scale = 1 }) {
   const titleColor = theme === "light" ? "#1A2744" : "white";
   const subtitleColor = theme === "light" ? "#147EAE" : theme === "teal" ? "rgba(255,255,255,0.85)" : "#73D3F5";
 
-  // Brand icon paths are relative to centre (0,0) in the brand SVG
-  // We translate to (iconSize/2, iconSize/2) and scale by S
-  const cx = iconSize / 2, cy = iconSize / 2;
-
   return (
     <div style={{ display: "flex", alignItems: "center", gap: size === "compact" ? 10 : 14 }}>
-      {/* Icon — exact brand SVG geometry */}
-      <svg width={iconSize} height={iconSize} viewBox={`0 0 ${iconSize} ${iconSize}`} fill="none" style={{ flexShrink: 0 }}>
-        <g transform={`translate(${cx},${cy}) scale(${S})`}>
-          {/* 8 rays at 45° intervals */}
-          <path d="M0,-130 L0,-153" stroke={rayColor} strokeWidth="11" strokeLinecap="round"/>
-          <path d="M91.924,-91.924 L108.187,-108.187" stroke={rayColor} strokeWidth="11" strokeLinecap="round"/>
-          <path d="M130,0 L153,0" stroke={rayColor} strokeWidth="11" strokeLinecap="round"/>
-          <path d="M91.924,91.924 L108.187,108.187" stroke={rayColor} strokeWidth="11" strokeLinecap="round"/>
-          <path d="M0,130 L0,153" stroke={rayColor} strokeWidth="11" strokeLinecap="round"/>
-          <path d="M-91.924,91.924 L-108.187,108.187" stroke={rayColor} strokeWidth="11" strokeLinecap="round"/>
-          <path d="M-130,0 L-153,0" stroke={rayColor} strokeWidth="11" strokeLinecap="round"/>
-          <path d="M-91.924,-91.924 L-108.187,-108.187" stroke={rayColor} strokeWidth="11" strokeLinecap="round"/>
-          {/* Concentric rings */}
-          <circle r="109" fill={outerRingFill}/>
-          <circle r="89" fill={midRingFill} opacity=".29"/>
-          <circle r="74" fill={innerFill}/>
-          <circle cy="-10" r="62" fill={innerFill2} opacity=".70"/>
-          {/* Person/reader figure */}
-          <circle cx="0" cy="-21" r="20" fill={figureFill}/>
-          <path d="M -56 23 C -37 9 -20 12 0 31 C 20 12 37 9 56 23 C 55 31 55 41 53 47 C 33 38 18 40 0 53 C -18 40 -33 38 -53 47 C -55 40 -55 31 -56 23 Z" fill={figureFill}/>
-        </g>
+      {/* Icon — exact brand SVG geometry, viewBox handles scaling */}
+      <svg width={iconSize} height={iconSize} viewBox={`${-VB} ${-VB} ${VB*2} ${VB*2}`} fill="none" style={{ flexShrink: 0 }}>
+        {/* 8 rays at 45° intervals */}
+        <path d="M0,-130 L0,-153" stroke={rayColor} strokeWidth="11" strokeLinecap="round"/>
+        <path d="M91.924,-91.924 L108.187,-108.187" stroke={rayColor} strokeWidth="11" strokeLinecap="round"/>
+        <path d="M130,0 L153,0" stroke={rayColor} strokeWidth="11" strokeLinecap="round"/>
+        <path d="M91.924,91.924 L108.187,108.187" stroke={rayColor} strokeWidth="11" strokeLinecap="round"/>
+        <path d="M0,130 L0,153" stroke={rayColor} strokeWidth="11" strokeLinecap="round"/>
+        <path d="M-91.924,91.924 L-108.187,108.187" stroke={rayColor} strokeWidth="11" strokeLinecap="round"/>
+        <path d="M-130,0 L-153,0" stroke={rayColor} strokeWidth="11" strokeLinecap="round"/>
+        <path d="M-91.924,-91.924 L-108.187,-108.187" stroke={rayColor} strokeWidth="11" strokeLinecap="round"/>
+        {/* Concentric rings */}
+        <circle r="109" fill={outerRingFill}/>
+        <circle r="89" fill={midRingFill} opacity=".29"/>
+        <circle r="74" fill={innerFill}/>
+        <circle cy="-10" r="62" fill={innerFill2} opacity=".70"/>
+        {/* Person/reader figure */}
+        <circle cx="0" cy="-21" r="20" fill={figureFill}/>
+        <path d="M -56 23 C -37 9 -20 12 0 31 C 20 12 37 9 56 23 C 55 31 55 41 53 47 C 33 38 18 40 0 53 C -18 40 -33 38 -53 47 C -55 40 -55 31 -56 23 Z" fill={figureFill}/>
       </svg>
 
       {/* Wordmark */}
