@@ -2168,7 +2168,7 @@ function Sidebar({ tab, setTab, teacherName, onSignOut, isAdmin, mobile, onClose
   ];
 
   return (
-    <div style={{ width: mobile ? "100%" : 240, background: T.sidebar, display: "flex", flexDirection: "column", minHeight: "100vh", flexShrink: 0, position: mobile ? "relative" : "fixed", left: 0, top: 0, bottom: 0, zIndex: 200 }}>
+    <div style={{ width: mobile ? "100%" : 240, background: "linear-gradient(180deg, #1A2744 0%, #1E2F52 40%, #162240 80%, #111B35 100%)", display: "flex", flexDirection: "column", minHeight: "100vh", flexShrink: 0, position: mobile ? "relative" : "fixed", left: 0, top: 0, bottom: 0, zIndex: 200 }}>
       {/* Logo */}
       <div style={{ padding: "28px 20px 20px", borderBottom: `1px solid ${T.sidebarAccent}` }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -2455,7 +2455,7 @@ export default function App() {
   `;
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: T.bg, fontFamily: FONT }}>
+    <div style={{ display: "flex", minHeight: "100vh", background: `linear-gradient(160deg, #DAEAF6 0%, #C5DDEF 35%, #D6EAF5 65%, #E8F4FB 100%)`, fontFamily: FONT }}>
       <style>{STYLES}</style>
 
       {/* Sidebar — desktop */}
@@ -2466,7 +2466,7 @@ export default function App() {
       {/* Mobile sidebar overlay */}
       {mobileSidebar && (
         <div style={{ position: "fixed", inset: 0, zIndex: 300, display: "flex" }}>
-          <div style={{ width: 280, background: T.sidebar }}>
+          <div style={{ width: 280, background: "linear-gradient(180deg, #1A2744 0%, #1E2F52 40%, #162240 80%, #111B35 100%)" }}>
             <Sidebar tab={tab} setTab={t => { setTab(t); setSearch(""); }} teacherName={teacherName} onSignOut={handleSignOut} isAdmin={isAdmin} mobile onClose={() => setMobileSidebar(false)} />
           </div>
           <div style={{ flex: 1, background: "rgba(0,0,0,.5)" }} onClick={() => setMobileSidebar(false)} />
@@ -2476,7 +2476,7 @@ export default function App() {
       {/* Main content */}
       <div className="main-content" style={{ flex: 1, marginLeft: 240, minHeight: "100vh", display: "flex", flexDirection: "column" }}>
         {/* Top bar */}
-        <div style={{ background: T.white, borderBottom: `1px solid ${T.slate200}`, flexShrink: 0, position: "sticky", top: 0, zIndex: 100 }}>
+        <div style={{ background: "rgba(218,234,246,0.85)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", borderBottom: "1px solid rgba(255,255,255,0.6)", flexShrink: 0, position: "sticky", top: 0, zIndex: 100 }}>
           <div style={{ height: 60, display: "flex", alignItems: "center", padding: "0 24px", gap: 16 }}>
             <button onClick={() => setMobileSidebar(true)} style={{ display: "none", background: "none", border: "none", cursor: "pointer", color: T.slate600, padding: 4 }} className="mobile-menu">
               <Icon name="menu" size={20} />
@@ -2944,101 +2944,210 @@ export default function App() {
           )}
 
           {/* ── CALENDAR ─────────────────────────────────────────────────────── */}
-          {tab === "calendar" && (
-            <div>
-              {/* Month nav bar */}
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <button onClick={() => setCalMonth(p => { const d = new Date(p.y, p.m - 1); return { y: d.getFullYear(), m: d.getMonth() }; })}
-                    style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid rgba(255,255,255,0.95)", borderRadius: 10, width: 36, height: 36, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 1px 4px rgba(26,39,68,0.08)" }}>
-                    <span style={{ transform: "rotate(180deg)", display: "inline-flex" }}><Icon name="chevronRight" size={16} color={T.slate600} /></span>
-                  </button>
-                  <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: T.sidebar, letterSpacing: "-0.02em" }}>
-                    {new Date(calMonth.y, calMonth.m).toLocaleDateString("en-GB", { month: "long", year: "numeric" })}
-                  </h2>
-                  <button onClick={() => setCalMonth(p => { const d = new Date(p.y, p.m + 1); return { y: d.getFullYear(), m: d.getMonth() }; })}
-                    style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid rgba(255,255,255,0.95)", borderRadius: 10, width: 36, height: 36, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 1px 4px rgba(26,39,68,0.08)" }}>
-                    <Icon name="chevronRight" size={16} color={T.slate600} />
-                  </button>
-                </div>
-                <Btn variant="secondary" onClick={() => exportAttendanceCSV(children, attendance, calMonth.y, calMonth.m)}>
-                  <Icon name="download" size={14} />Export CSV
-                </Btn>
-              </div>
+          {tab === "calendar" && (() => {
+            // Build calendar grid data
+            const firstDay = new Date(calMonth.y, calMonth.m, 1);
+            const lastDay = new Date(calMonth.y, calMonth.m + 1, 0);
+            // weekday of first day (Mon=0 … Sun=6)
+            const startOffset = (firstDay.getDay() + 6) % 7;
+            const totalDays = lastDay.getDate();
+            const cells = [];
+            for (let i = 0; i < startOffset; i++) cells.push(null);
+            for (let d = 1; d <= totalDays; d++) cells.push(d);
+            while (cells.length % 7 !== 0) cells.push(null);
 
-              {/* Sunday cards */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {getSundays(calMonth.y, calMonth.m).map((sunday, i) => {
-                  const key = dateKey(sunday);
-                  const dayAtt = attendance[key] || {};
-                  const count = Object.keys(dayAtt).length;
-                  const isToday = key === todayKey;
-                  const isOpen = calOpen === key;
-                  const nurseryCount = Object.entries(dayAtt).filter(([cid]) => { const c = children.find(x => x.id === cid); return c && liveAge(c) <= 5; }).length;
-                  const juniorsCount = Object.entries(dayAtt).filter(([cid]) => { const c = children.find(x => x.id === cid); return c && liveAge(c) >= 6; }).length;
-                  return (
-                    <div key={key} style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: `1px solid ${isToday ? T.teal : "rgba(255,255,255,0.95)"}`, borderRadius: 14, overflow: "hidden", boxShadow: isToday ? `0 0 0 2px ${T.teal}22, 0 2px 12px rgba(26,39,68,0.08)` : "0 2px 8px rgba(26,39,68,0.06)" }}>
-                      <div onClick={() => setCalOpen(isOpen ? null : key)} style={{ padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer" }}>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontWeight: 700, fontSize: 15, color: T.slate900, display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                            {isToday && <span style={{ width: 8, height: 8, borderRadius: "50%", background: T.teal, display: "inline-block", flexShrink: 0 }} />}
-                            {formatDate(sunday)}
-                            {isToday && <span style={{ fontSize: 11, fontWeight: 700, background: T.teal, color: "white", borderRadius: 6, padding: "2px 7px", letterSpacing: "0.04em" }}>TODAY</span>}
+            // Sundays with attendance in this month
+            const sundaysThisMonth = getSundays(calMonth.y, calMonth.m);
+            const sundayKeys = new Set(sundaysThisMonth.map(s => dateKey(s)));
+
+            // All past Sundays across all months with records (for the right panel)
+            const allSundaysWithData = Object.keys(attendance)
+              .filter(k => {
+                const d = new Date(k);
+                return d.getDay() === 0 && d.getFullYear() === calMonth.y && d.getMonth() === calMonth.m;
+              })
+              .sort((a, b) => new Date(b) - new Date(a));
+
+            const selectedKey = calOpen;
+            const selectedAtt = selectedKey ? (attendance[selectedKey] || {}) : null;
+
+            const DAYS = ["Mo","Tu","We","Th","Fr","Sa","Su"];
+
+            return (
+              <div>
+                {/* Desktop: side-by-side. Mobile: stacked */}
+                <div style={{ display: "grid", gridTemplateColumns: "minmax(0,340px) 1fr", gap: 16, alignItems: "start" }} className="cal-grid">
+                  <style>{`.cal-grid { @media (max-width:700px) { grid-template-columns: 1fr !important; } }`}</style>
+
+                  {/* LEFT — mini calendar */}
+                  <div style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid rgba(255,255,255,0.95)", borderRadius: 18, padding: "20px 18px", boxShadow: "0 2px 16px rgba(26,39,68,0.08)" }}>
+                    {/* Month nav */}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+                      <button onClick={() => setCalMonth(p => { const d = new Date(p.y, p.m - 1); return { y: d.getFullYear(), m: d.getMonth() }; })}
+                        style={{ background: "rgba(26,39,68,0.06)", border: "none", borderRadius: 8, width: 32, height: 32, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <span style={{ transform: "rotate(180deg)", display: "inline-flex" }}><Icon name="chevronRight" size={14} color={T.slate600} /></span>
+                      </button>
+                      <span style={{ fontSize: 15, fontWeight: 700, color: "#1A2744" }}>
+                        {new Date(calMonth.y, calMonth.m).toLocaleDateString("en-GB", { month: "long", year: "numeric" })}
+                      </span>
+                      <button onClick={() => setCalMonth(p => { const d = new Date(p.y, p.m + 1); return { y: d.getFullYear(), m: d.getMonth() }; })}
+                        style={{ background: "rgba(26,39,68,0.06)", border: "none", borderRadius: 8, width: 32, height: 32, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <Icon name="chevronRight" size={14} color={T.slate600} />
+                      </button>
+                    </div>
+
+                    {/* Day headers */}
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 2, marginBottom: 6 }}>
+                      {DAYS.map(d => (
+                        <div key={d} style={{ textAlign: "center", fontSize: 11, fontWeight: 600, color: T.slate400, padding: "4px 0", letterSpacing: ".04em" }}>{d}</div>
+                      ))}
+                    </div>
+
+                    {/* Day cells */}
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 2 }}>
+                      {cells.map((day, i) => {
+                        if (!day) return <div key={`e${i}`} />;
+                        const cellDate = new Date(calMonth.y, calMonth.m, day);
+                        const key = dateKey(cellDate);
+                        const isSun = cellDate.getDay() === 0;
+                        const isToday = key === todayKey;
+                        const isSelected = key === calOpen;
+                        const hasData = attendance[key] && Object.keys(attendance[key]).length > 0;
+                        const isServiceDay = isSun && sundayKeys.has(key);
+
+                        return (
+                          <div key={day} onClick={() => isSun ? setCalOpen(isSelected ? null : key) : null}
+                            style={{
+                              textAlign: "center", padding: "6px 2px", borderRadius: 8, cursor: isSun ? "pointer" : "default",
+                              background: isSelected ? "#1A2744" : isToday ? T.teal : "transparent",
+                              color: isSelected || isToday ? "white" : isSun ? "#1A2744" : T.slate500,
+                              fontWeight: isSun ? 700 : 400,
+                              fontSize: 13,
+                              position: "relative",
+                              transition: "all .15s",
+                            }}>
+                            {day}
+                            {hasData && !isSelected && !isToday && (
+                              <div style={{ width: 5, height: 5, borderRadius: "50%", background: T.teal, position: "absolute", bottom: 1, left: "50%", transform: "translateX(-50%)" }} />
+                            )}
+                            {isToday && hasData && (
+                              <div style={{ width: 5, height: 5, borderRadius: "50%", background: "rgba(255,255,255,0.8)", position: "absolute", bottom: 1, left: "50%", transform: "translateX(-50%)" }} />
+                            )}
                           </div>
-                          {count > 0 ? (
-                            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                              <span style={{ fontSize: 13, color: T.slate500 }}>{count} children</span>
-                              {nurseryCount > 0 && <span style={{ fontSize: 11, fontWeight: 700, background: "rgba(124,58,237,0.1)", color: "#7C3AED", borderRadius: 6, padding: "2px 7px" }}>Nursery {nurseryCount}</span>}
-                              {juniorsCount > 0 && <span style={{ fontSize: 11, fontWeight: 700, background: "rgba(5,150,105,0.1)", color: "#059669", borderRadius: 6, padding: "2px 7px" }}>Juniors {juniorsCount}</span>}
-                            </div>
-                          ) : (
-                            <span style={{ fontSize: 13, color: T.slate400, fontStyle: "italic" }}>No records yet</span>
-                          )}
-                        </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
-                          {count > 0 && (
-                            <div style={{ background: "linear-gradient(135deg,#1A2744,#0369A1)", color: "white", borderRadius: 20, padding: "4px 14px", fontWeight: 700, fontSize: 14, minWidth: 32, textAlign: "center" }}>{count}</div>
-                          )}
-                          <div style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(26,39,68,0.06)", display: "flex", alignItems: "center", justifyContent: "center", transition: "transform .2s", transform: isOpen ? "rotate(90deg)" : "" }}>
-                            <Icon name="chevronRight" size={14} color={T.slate400} />
-                          </div>
-                        </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Legend */}
+                    <div style={{ display: "flex", gap: 14, marginTop: 14, paddingTop: 12, borderTop: "1px solid rgba(26,39,68,0.06)" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: T.slate500 }}>
+                        <div style={{ width: 7, height: 7, borderRadius: "50%", background: T.teal }} />Service day
                       </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: T.slate500 }}>
+                        <div style={{ width: 14, height: 14, borderRadius: 4, background: T.teal }} />Today
+                      </div>
+                    </div>
 
-                      {isOpen && (
-                        <div style={{ borderTop: "1px solid rgba(26,39,68,0.08)", padding: "12px 20px", background: "rgba(255,255,255,0.5)" }}>
-                          {count === 0 && <p style={{ color: T.slate400, fontSize: 14, fontStyle: "italic", margin: 0 }}>No attendance recorded.</p>}
-                          {Object.entries(dayAtt).map(([cid, rec]) => {
+                    {/* Export */}
+                    <div style={{ marginTop: 12 }}>
+                      <Btn variant="secondary" full onClick={() => exportAttendanceCSV(children, attendance, calMonth.y, calMonth.m)}>
+                        <Icon name="download" size={13} />Export CSV
+                      </Btn>
+                    </div>
+                  </div>
+
+                  {/* RIGHT — service list / detail */}
+                  <div>
+                    {/* If a day is selected and has data → show its children */}
+                    {selectedKey && selectedAtt && Object.keys(selectedAtt).length > 0 ? (
+                      <div style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid rgba(255,255,255,0.95)", borderRadius: 18, overflow: "hidden", boxShadow: "0 2px 16px rgba(26,39,68,0.08)" }}>
+                        <div style={{ padding: "16px 20px", borderBottom: "1px solid rgba(26,39,68,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                          <div>
+                            <div style={{ fontSize: 11, fontWeight: 600, color: T.slate400, textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 2 }}>SUN</div>
+                            <div style={{ fontSize: 22, fontWeight: 800, color: "#1A2744", lineHeight: 1 }}>
+                              {new Date(selectedKey).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                            </div>
+                          </div>
+                          <div style={{ textAlign: "right" }}>
+                            <div style={{ fontSize: 32, fontWeight: 800, color: T.teal, lineHeight: 1 }}>{Object.keys(selectedAtt).length}</div>
+                            <div style={{ fontSize: 11, color: T.slate400, fontWeight: 600 }}>attended</div>
+                          </div>
+                        </div>
+                        <div style={{ padding: "12px 20px", display: "flex", flexDirection: "column", gap: 0 }}>
+                          {Object.entries(selectedAtt).map(([cid, rec]) => {
                             const child = children.find(c => c.id === cid);
                             if (!child) return null;
                             const grp = getAgeGroup(liveAge(child));
                             const accentCol = grp?.label === "Nursery" ? "#7C3AED" : grp?.label === "Juniors" ? "#059669" : T.teal;
                             return (
-                              <div key={cid} style={{ display: "flex", alignItems: "center", gap: 12, padding: "9px 0", borderBottom: "1px solid rgba(26,39,68,0.06)" }}>
+                              <div key={cid} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: "1px solid rgba(26,39,68,0.05)" }}>
                                 <ChildAvatar child={child} size={34} />
                                 <div style={{ flex: 1, minWidth: 0 }}>
-                                  <div style={{ fontWeight: 600, fontSize: 14, color: T.slate800 }}>{child.name}</div>
-                                  <div style={{ fontSize: 12, color: T.slate400, marginTop: 2 }}>
-                                    <span style={{ color: "#059669", fontWeight: 600 }}>In {rec.in}</span>
-                                    {rec.inTeacher && <span> · {rec.inTeacher}</span>}
-                                    {rec.out && <><span style={{ color: T.slate300 }}> · </span><span style={{ color: "#DC2626", fontWeight: 600 }}>Out {rec.out}</span>{rec.outTeacher && <span> · {rec.outTeacher}</span>}</>}
+                                  <div style={{ fontWeight: 600, fontSize: 13, color: "#1A2744" }}>{child.name}</div>
+                                  <div style={{ fontSize: 11, color: T.slate400, marginTop: 1 }}>
+                                    <span style={{ color: "#059669", fontWeight: 600 }}>In {rec.in?.split("·")[1]?.trim() || rec.in}</span>
+                                    {rec.out && <><span style={{ color: T.slate300 }}> · </span><span style={{ color: "#DC2626", fontWeight: 600 }}>Out {rec.out?.split("·")[1]?.trim() || rec.out}</span></>}
                                   </div>
                                 </div>
-                                <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-                                  {grp && <span style={{ fontSize: 11, fontWeight: 700, background: `${accentCol}18`, color: accentCol, borderRadius: 6, padding: "2px 7px" }}>{grp.label}</span>}
-                                  {!rec.out && <Badge label="Present" bg={T.greenLight} color={T.green} />}
+                                {grp && <span style={{ fontSize: 10, fontWeight: 700, background: `${accentCol}15`, color: accentCol, borderRadius: 20, padding: "3px 8px", textTransform: "uppercase", letterSpacing: ".04em", flexShrink: 0 }}>{grp.label}</span>}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ) : (
+                      /* Default: list of past services this month */
+                      <div style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid rgba(255,255,255,0.95)", borderRadius: 18, overflow: "hidden", boxShadow: "0 2px 16px rgba(26,39,68,0.08)" }}>
+                        <div style={{ padding: "16px 20px", borderBottom: "1px solid rgba(26,39,68,0.06)", display: "flex", alignItems: "center", gap: 10 }}>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l1 12a2 2 0 002 2h8a2 2 0 002-2L19 8M10 12v4m4-4v4" stroke={T.teal} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                          <span style={{ fontWeight: 700, fontSize: 14, color: "#1A2744" }}>Past Services</span>
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column" }}>
+                          {allSundaysWithData.length === 0 && (
+                            <div style={{ padding: "24px 20px", textAlign: "center", color: T.slate400, fontSize: 13, fontStyle: "italic" }}>No services recorded this month. Tap a Sunday on the calendar.</div>
+                          )}
+                          {allSundaysWithData.map((key, i) => {
+                            const dayAtt = attendance[key] || {};
+                            const count = Object.keys(dayAtt).length;
+                            const nurseryCount = Object.entries(dayAtt).filter(([cid]) => { const c = children.find(x => x.id === cid); return c && liveAge(c) <= 5; }).length;
+                            const juniorsCount = Object.entries(dayAtt).filter(([cid]) => { const c = children.find(x => x.id === cid); return c && liveAge(c) >= 6; }).length;
+                            const visitorsCount = count - nurseryCount - juniorsCount;
+                            const d = new Date(key);
+                            const isToday = key === todayKey;
+                            return (
+                              <div key={key} onClick={() => setCalOpen(key)}
+                                style={{ display: "flex", alignItems: "center", gap: 16, padding: "16px 20px", borderBottom: i < allSundaysWithData.length - 1 ? "1px solid rgba(26,39,68,0.06)" : "none", cursor: "pointer", background: calOpen === key ? "rgba(2,132,199,0.05)" : "transparent", transition: "background .15s" }}>
+                                {/* Date block */}
+                                <div style={{ textAlign: "center", minWidth: 44, flexShrink: 0 }}>
+                                  <div style={{ fontSize: 10, fontWeight: 700, color: T.teal, textTransform: "uppercase", letterSpacing: ".08em" }}>SUN</div>
+                                  <div style={{ fontSize: 26, fontWeight: 800, color: "#1A2744", lineHeight: 1 }}>{d.getDate()}</div>
+                                  <div style={{ fontSize: 11, color: T.slate400 }}>{d.toLocaleDateString("en-GB", { month: "short", year: "numeric" })}</div>
+                                </div>
+                                {/* Info */}
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <div style={{ fontSize: 13, fontWeight: 600, color: "#1A2744", marginBottom: 6 }}>10:30 AM Service</div>
+                                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                                    {nurseryCount > 0 && <span style={{ fontSize: 11, fontWeight: 700, background: "rgba(124,58,237,0.1)", color: "#7C3AED", borderRadius: 6, padding: "3px 8px" }}>Nursery {nurseryCount}</span>}
+                                    {juniorsCount > 0 && <span style={{ fontSize: 11, fontWeight: 700, background: "rgba(5,150,105,0.1)", color: "#059669", borderRadius: 6, padding: "3px 8px" }}>Juniors {juniorsCount}</span>}
+                                    {visitorsCount > 0 && <span style={{ fontSize: 11, fontWeight: 700, background: "rgba(217,119,6,0.1)", color: "#D97706", borderRadius: 6, padding: "3px 8px" }}>Visitors {visitorsCount}</span>}
+                                  </div>
+                                </div>
+                                {/* Count */}
+                                <div style={{ textAlign: "right", flexShrink: 0 }}>
+                                  <div style={{ fontSize: 26, fontWeight: 800, color: T.teal, lineHeight: 1 }}>{count}</div>
+                                  <div style={{ fontSize: 11, color: T.slate400, fontWeight: 600 }}>attended</div>
                                 </div>
                               </div>
                             );
                           })}
                         </div>
-                      )}
-                    </div>
-                  );
-                })}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* ── ACTIVITY LOG ─────────────────────────────────────────────────── */}
           {tab === "activity" && (
