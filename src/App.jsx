@@ -721,7 +721,7 @@ function ChildForm({ initial, onSave, onClose, allChildren }) {
 
           {/* Search */}
           <div style={{ position: "relative" }}>
-            <div style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)" }}><Icon name="search" size={14} color={T.slate400} /></div>
+            <div style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", zIndex: 1, pointerEvents: "none", display: "flex" }}><Icon name="search" size={14} color={T.slate400} /></div>
             <input value={siblingSearch} onChange={e => setSiblingSearch(e.target.value)} placeholder="Search for a sibling by name…"
               style={{ width: "100%", border: `1.5px solid ${T.slate200}`, borderRadius: 8, padding: "8px 12px 8px 32px", fontSize: 13, fontFamily: FONT, background: T.white, outline: "none", boxSizing: "border-box" }} />
           </div>
@@ -2734,9 +2734,9 @@ export default function App() {
               {/* ── SEARCH + SCAN ── */}
               <div style={{ display: "flex", gap: 10, marginBottom: 24 }}>
                 <div style={{ position: "relative", flex: 1 }}>
-                  <div style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }}><Icon name="search" size={16} color={T.slate400} /></div>
+                  <div style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", zIndex: 1, pointerEvents: "none", display: "flex" }}><Icon name="search" size={16} color={T.slate400} /></div>
                   <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search children..."
-                    style={{ width: "100%", padding: "11px 12px 11px 40px", border: "1.5px solid rgba(255,255,255,0.95)", borderRadius: 12, fontSize: 14, fontFamily: FONT, background: "rgba(255,255,255,0.88)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", outline: "none", boxShadow: "0 2px 8px rgba(26,39,68,0.06)", color: "#1A2744" }} />
+                    style={{ width: "100%", padding: "11px 12px 11px 36px", boxSizing: "border-box", border: "1.5px solid rgba(255,255,255,0.95)", borderRadius: 12, fontSize: 14, fontFamily: FONT, background: "rgba(255,255,255,0.88)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", outline: "none", boxShadow: "0 2px 8px rgba(26,39,68,0.06)", color: "#1A2744" }} />
                 </div>
                 <button onClick={() => setModal({ type: "scanner" })} style={{
                   display: "flex", alignItems: "center", gap: 8,
@@ -2913,9 +2913,9 @@ export default function App() {
               {/* ── Search + Add ── */}
               <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
                 <div style={{ position: "relative", flex: 1 }}>
-                  <div style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }}><Icon name="search" size={16} color={T.slate400} /></div>
+                  <div style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", zIndex: 1, pointerEvents: "none", display: "flex" }}><Icon name="search" size={16} color={T.slate400} /></div>
                   <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, parent or group…"
-                    style={{ width: "100%", padding: "11px 12px 11px 38px", border: "1.5px solid rgba(255,255,255,0.9)", borderRadius: 12, fontSize: 14, fontFamily: FONT, background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", outline: "none", boxShadow: "0 1px 4px rgba(26,39,68,0.06)", color: T.slate900 }} />
+                    style={{ width: "100%", padding: "11px 12px 11px 36px", boxSizing: "border-box", border: "1.5px solid rgba(255,255,255,0.9)", borderRadius: 12, fontSize: 14, fontFamily: FONT, background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", outline: "none", boxShadow: "0 1px 4px rgba(26,39,68,0.06)", color: T.slate900 }} />
                 </div>
                 <Btn onClick={() => setModal({ type: "add" })}><Icon name="plus" size={14} />Add Child</Btn>
               </div>
