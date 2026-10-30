@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="520" viewBox="0 0 1500 520">
+<rect width="1500" height="520" fill="#F7FAFD"/>
+<g transform="translate(260,260) scale(1.30)"><path d="M0.000,-130.000 L0.000,-153.000" stroke="#FFCF58" stroke-width="11" stroke-linecap="round"/>
+<path d="M91.924,-91.924 L108.187,-108.187" stroke="#FFCF58" stroke-width="11" stroke-linecap="round"/>
+<path d="M130.000,-0.000 L153.000,-0.000" stroke="#FFCF58" stroke-width="11" stroke-linecap="round"/>
+<path d="M91.924,91.924 L108.187,108.187" stroke="#FFCF58" stroke-width="11" stroke-linecap="round"/>
+<path d="M0.000,130.000 L0.000,153.000" stroke="#FFCF58" stroke-width="11" stroke-linecap="round"/>
+<path d="M-91.924,91.924 L-108.187,108.187" stroke="#FFCF58" stroke-width="11" stroke-linecap="round"/>
+<path d="M-130.000,0.000 L-153.000,0.000" stroke="#FFCF58" stroke-width="11" stroke-linecap="round"/>
+<path d="M-91.924,-91.924 L-108.187,-108.187" stroke="#FFCF58" stroke-width="11" stroke-linecap="round"/>
+<circle r="109" fill="#3B5269"/>
+<circle r="89" fill="#F7C451" opacity=".29"/>
+<circle r="74" fill="#FFB92B"/>
+<circle cy="-10" r="62" fill="#FFD14F" opacity=".70"/>
+<circle cx="0" cy="-21" r="20" fill="#FFFDF2"/>
+<path d="M -56 23 C -37 9 -20 12 0 31 C 20 12 37 9 56 23 C 55 31 55 41 53 47 C 33 38 18 40 0 53 C -18 40 -33 38 -53 47 C -55 40 -55 31 -56 23 Z" fill="#FFFDF2"/></g>
+<g font-family="Lato, Arial, sans-serif" font-weight="300" font-size="160" letter-spacing="0.5">
+<text x="482" y="251" fill="#1D2A49">Little</text>
+<text x="482" y="405" fill="#147EAE">Lights</text>
+</g>
+</svg>

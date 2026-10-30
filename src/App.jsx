@@ -46,54 +46,59 @@ function getGoogleProvider() {
 function LittleLightsLogo({ size = "full", theme = "dark", scale = 1 }) {
   // size: "full" = icon + stacked wordmark, "compact" = icon + single-line, "icon" = icon only
   // theme: "dark" (on dark bg), "light" (on white), "teal" (on teal)
+  // Icon uses exact brand SVG paths from the official Little Lights brand kit
 
-  const iconSize = (size === "compact" ? 32 : size === "icon" ? 40 : 48) * scale;
-  const cx = iconSize / 2, cy = iconSize / 2;
-  const r1 = iconSize * 0.42, r2 = iconSize * 0.31, r3 = iconSize * 0.22, r4 = iconSize * 0.145;
-  const rayLong = iconSize * 0.08, rayShort = iconSize * 0.065;
-  const rayStart = iconSize * 0.5, rayDiagStart = iconSize * 0.44;
+  const iconSize = (size === "compact" ? 36 : size === "icon" ? 44 : 52) * scale;
+  // The brand SVG uses a 280-unit coordinate space (translate 0,0 scale 1.82 on a 1080 canvas → centre at 540)
+  // We render the icon group directly, scaling to fit iconSize
+  const S = iconSize / 280; // scale factor from brand coords to pixels
 
-  const ringOpacity = theme === "light" ? 1 : theme === "teal" ? 0.18 : 0.18;
-  const ring1Fill = theme === "light" ? "#FEF9C3" : theme === "teal" ? "white" : "#FEF9C3";
-  const ring2Fill = theme === "light" ? "#FEF3C7" : theme === "teal" ? "white" : "#FEF3C7";
-  const ring3Fill = theme === "light" ? "#FDE68A" : theme === "teal" ? "white" : "#FDE68A";
-  const coreFill = theme === "teal" ? "#FDE68A" : "#F59E0B";
-  const rayColor = theme === "light" ? "#F59E0B" : theme === "teal" ? "rgba(255,255,255,0.55)" : "#FCD34D";
-  const diagRayColor = theme === "light" ? "#FCD34D" : theme === "teal" ? "rgba(255,255,255,0.35)" : "#FCD34D";
+  const rayColor = theme === "teal" ? "rgba(255,255,255,0.7)" : "#FFCF58";
+  const outerRingFill = "#3B5269";
+  const midRingFill = "#F7C451";
+  const innerFill = "#FFB92B";
+  const innerFill2 = "#FFD14F";
+  const figureFill = "#FFFDF2";
 
   const titleColor = theme === "light" ? "#1A2744" : "white";
-  const subtitleColor = theme === "light" ? "#0284C7" : theme === "teal" ? "rgba(255,255,255,0.85)" : "#7DD3FC";
+  const subtitleColor = theme === "light" ? "#147EAE" : theme === "teal" ? "rgba(255,255,255,0.85)" : "#73D3F5";
+
+  // Brand icon paths are relative to centre (0,0) in the brand SVG
+  // We translate to (iconSize/2, iconSize/2) and scale by S
+  const cx = iconSize / 2, cy = iconSize / 2;
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: size === "compact" ? 10 : 14 }}>
-      {/* Icon */}
+      {/* Icon — exact brand SVG geometry */}
       <svg width={iconSize} height={iconSize} viewBox={`0 0 ${iconSize} ${iconSize}`} fill="none" style={{ flexShrink: 0 }}>
-        <circle cx={cx} cy={cy} r={r1} fill={ring1Fill} opacity={theme === "light" ? 0.6 : ringOpacity * 1.2}/>
-        <circle cx={cx} cy={cy} r={r2} fill={ring2Fill} opacity={theme === "light" ? 0.75 : ringOpacity * 1.5}/>
-        <circle cx={cx} cy={cy} r={r3} fill={ring3Fill} opacity={theme === "light" ? 0.85 : ringOpacity * 2}/>
-        <circle cx={cx} cy={cy} r={r4} fill={coreFill}/>
-        {/* Child silhouette */}
-        <circle cx={cx} cy={cy - r4 * 0.4} r={r4 * 0.38} fill="white"/>
-        <path d={`M${cx - r4 * 0.75} ${cy + r4 * 0.85} Q${cx} ${cy + r4 * 0.2} ${cx + r4 * 0.75} ${cy + r4 * 0.85}`} fill="white"/>
-        {/* Cardinal rays */}
-        <line x1={cx} y1={cx - rayStart} x2={cx} y2={cx - rayStart + rayLong} stroke={rayColor} strokeWidth="2" strokeLinecap="round"/>
-        <line x1={cx} y1={cx + rayStart} x2={cx} y2={cx + rayStart - rayLong} stroke={rayColor} strokeWidth="2" strokeLinecap="round"/>
-        <line x1={cx - rayStart} y1={cy} x2={cx - rayStart + rayLong} y2={cy} stroke={rayColor} strokeWidth="2" strokeLinecap="round"/>
-        <line x1={cx + rayStart} y1={cy} x2={cx + rayStart - rayLong} y2={cy} stroke={rayColor} strokeWidth="2" strokeLinecap="round"/>
-        {/* Diagonal rays */}
-        <line x1={cx - rayDiagStart} y1={cy - rayDiagStart} x2={cx - rayDiagStart + rayShort} y2={cy - rayDiagStart + rayShort} stroke={diagRayColor} strokeWidth="1.5" strokeLinecap="round"/>
-        <line x1={cx + rayDiagStart} y1={cy + rayDiagStart} x2={cx + rayDiagStart - rayShort} y2={cy + rayDiagStart - rayShort} stroke={diagRayColor} strokeWidth="1.5" strokeLinecap="round"/>
-        <line x1={cx + rayDiagStart} y1={cy - rayDiagStart} x2={cx + rayDiagStart - rayShort} y2={cy - rayDiagStart + rayShort} stroke={diagRayColor} strokeWidth="1.5" strokeLinecap="round"/>
-        <line x1={cx - rayDiagStart} y1={cy + rayDiagStart} x2={cx - rayDiagStart + rayShort} y2={cy + rayDiagStart - rayShort} stroke={diagRayColor} strokeWidth="1.5" strokeLinecap="round"/>
+        <g transform={`translate(${cx},${cy}) scale(${S})`}>
+          {/* 8 rays at 45° intervals */}
+          <path d="M0,-130 L0,-153" stroke={rayColor} strokeWidth="11" strokeLinecap="round"/>
+          <path d="M91.924,-91.924 L108.187,-108.187" stroke={rayColor} strokeWidth="11" strokeLinecap="round"/>
+          <path d="M130,0 L153,0" stroke={rayColor} strokeWidth="11" strokeLinecap="round"/>
+          <path d="M91.924,91.924 L108.187,108.187" stroke={rayColor} strokeWidth="11" strokeLinecap="round"/>
+          <path d="M0,130 L0,153" stroke={rayColor} strokeWidth="11" strokeLinecap="round"/>
+          <path d="M-91.924,91.924 L-108.187,108.187" stroke={rayColor} strokeWidth="11" strokeLinecap="round"/>
+          <path d="M-130,0 L-153,0" stroke={rayColor} strokeWidth="11" strokeLinecap="round"/>
+          <path d="M-91.924,-91.924 L-108.187,-108.187" stroke={rayColor} strokeWidth="11" strokeLinecap="round"/>
+          {/* Concentric rings */}
+          <circle r="109" fill={outerRingFill}/>
+          <circle r="89" fill={midRingFill} opacity=".29"/>
+          <circle r="74" fill={innerFill}/>
+          <circle cy="-10" r="62" fill={innerFill2} opacity=".70"/>
+          {/* Person/reader figure */}
+          <circle cx="0" cy="-21" r="20" fill={figureFill}/>
+          <path d="M -56 23 C -37 9 -20 12 0 31 C 20 12 37 9 56 23 C 55 31 55 41 53 47 C 33 38 18 40 0 53 C -18 40 -33 38 -53 47 C -55 40 -55 31 -56 23 Z" fill={figureFill}/>
+        </g>
       </svg>
 
       {/* Wordmark */}
       {size !== "icon" && (
         <div>
-          <div style={{ fontFamily: SERIF, fontWeight: 400, color: titleColor, lineHeight: 1.1,
-            fontSize: (size === "compact" ? 17 : 22) * scale, letterSpacing: ".01em" }}>Little</div>
-          <div style={{ fontFamily: SERIF, fontWeight: 400, color: subtitleColor, lineHeight: 1.1,
-            fontSize: (size === "compact" ? 17 : 22) * scale, letterSpacing: ".01em" }}>Lights</div>
+          <div style={{ fontFamily: "Lato, Arial, sans-serif", fontWeight: 300, color: titleColor, lineHeight: 1.15,
+            fontSize: (size === "compact" ? 18 : 23) * scale, letterSpacing: ".01em" }}>Little</div>
+          <div style={{ fontFamily: "Lato, Arial, sans-serif", fontWeight: 300, color: subtitleColor, lineHeight: 1.15,
+            fontSize: (size === "compact" ? 18 : 23) * scale, letterSpacing: ".01em" }}>Lights</div>
         </div>
       )}
     </div>
