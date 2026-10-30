@@ -3124,13 +3124,25 @@ export default function App() {
                                   <div style={{ fontSize: 11, color: T.slate400 }}>{d.toLocaleDateString("en-GB", { month: "short", year: "numeric" })}</div>
                                 </div>
                                 {/* Info */}
-                                <div style={{ flex: 1, minWidth: 0 }}>
-                                  <div style={{ fontSize: 13, fontWeight: 600, color: "#1A2744", marginBottom: 6 }}>10:30 AM Service</div>
-                                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                                    {nurseryCount > 0 && <span style={{ fontSize: 11, fontWeight: 700, background: "rgba(124,58,237,0.1)", color: "#7C3AED", borderRadius: 6, padding: "3px 8px" }}>Nursery {nurseryCount}</span>}
-                                    {juniorsCount > 0 && <span style={{ fontSize: 11, fontWeight: 700, background: "rgba(5,150,105,0.1)", color: "#059669", borderRadius: 6, padding: "3px 8px" }}>Juniors {juniorsCount}</span>}
-                                    {visitorsCount > 0 && <span style={{ fontSize: 11, fontWeight: 700, background: "rgba(217,119,6,0.1)", color: "#D97706", borderRadius: 6, padding: "3px 8px" }}>Visitors {visitorsCount}</span>}
-                                  </div>
+                                <div style={{ flex: 1, minWidth: 0, display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+                                  {nurseryCount > 0 && (
+                                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", background: "rgba(124,58,237,0.08)", borderRadius: 10, padding: "6px 12px", minWidth: 60 }}>
+                                      <span style={{ fontSize: 20, fontWeight: 800, color: "#7C3AED", lineHeight: 1 }}>{nurseryCount}</span>
+                                      <span style={{ fontSize: 10, fontWeight: 600, color: "#7C3AED", textTransform: "uppercase", letterSpacing: ".06em", marginTop: 2 }}>Nursery</span>
+                                    </div>
+                                  )}
+                                  {juniorsCount > 0 && (
+                                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", background: "rgba(5,150,105,0.08)", borderRadius: 10, padding: "6px 12px", minWidth: 60 }}>
+                                      <span style={{ fontSize: 20, fontWeight: 800, color: "#059669", lineHeight: 1 }}>{juniorsCount}</span>
+                                      <span style={{ fontSize: 10, fontWeight: 600, color: "#059669", textTransform: "uppercase", letterSpacing: ".06em", marginTop: 2 }}>Juniors</span>
+                                    </div>
+                                  )}
+                                  {visitorsCount > 0 && (
+                                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", background: "rgba(217,119,6,0.08)", borderRadius: 10, padding: "6px 12px", minWidth: 60 }}>
+                                      <span style={{ fontSize: 20, fontWeight: 800, color: "#D97706", lineHeight: 1 }}>{visitorsCount}</span>
+                                      <span style={{ fontSize: 10, fontWeight: 600, color: "#D97706", textTransform: "uppercase", letterSpacing: ".06em", marginTop: 2 }}>Visitors</span>
+                                    </div>
+                                  )}
                                 </div>
                                 {/* Count */}
                                 <div style={{ textAlign: "right", flexShrink: 0 }}>
