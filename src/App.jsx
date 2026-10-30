@@ -601,8 +601,8 @@ function ChildForm({ initial, onSave, onClose, allChildren }) {
       </div>
 
       {/* Row 2: Date of Birth + Age (auto-calculated) */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 160px", gap: "0 16px", marginBottom: 0 }}>
-        <div style={{ marginBottom: 14 }}>
+      <div style={{ display: "flex", gap: 16, marginBottom: 0, flexWrap: "wrap" }}>
+        <div style={{ flex: "1 1 180px", marginBottom: 14 }}>
           {lbl("Date of Birth", true)}
           <DatePicker
             value={form.dob || ""}
@@ -616,7 +616,7 @@ function ChildForm({ initial, onSave, onClose, allChildren }) {
           />
           {formErrors.dob && <p style={errStyle}>{formErrors.dob}</p>}
         </div>
-        <div style={{ marginBottom: 14 }}>
+        <div style={{ flex: "0 0 90px", marginBottom: 14 }}>
           <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: T.slate500, marginBottom: 5, textTransform: "uppercase", letterSpacing: ".06em" }}>Age</label>
           <input readOnly value={form.age !== "" ? `${form.age} yrs` : "—"} style={{ width: "100%", border: `1.5px solid ${T.slate200}`, borderRadius: 8, padding: "9px 12px", fontSize: 14, fontFamily: FONT, background: T.slate50, color: T.teal, fontWeight: 500, outline: "none", boxSizing: "border-box" }} />
         </div>
@@ -2588,15 +2588,15 @@ export default function App() {
                 </div>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 14 }}>
-                {/* Attendance chart */}
-                <div style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderRadius: 16, padding: 20, border: "1px solid rgba(255,255,255,0.95)", boxShadow: "0 2px 12px rgba(26,39,68,0.07)" }}>
-                  <h3 style={{ margin: "0 0 16px", fontSize: 14, fontWeight: 700, color: "#1A2744" }}>Attendance — Last 12 Sundays</h3>
-                  <AttendanceChart attendance={attendance} />
-                </div>
+              {/* Attendance chart — full width */}
+              <div style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderRadius: 16, padding: 20, border: "1px solid rgba(255,255,255,0.95)", boxShadow: "0 2px 12px rgba(26,39,68,0.07)", marginBottom: 14 }}>
+                <h3 style={{ margin: "0 0 16px", fontSize: 14, fontWeight: 700, color: "#1A2744" }}>Attendance — Last 12 Sundays</h3>
+                <AttendanceChart attendance={attendance} />
+              </div>
 
-                {/* Alerts */}
-                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              {/* Alerts — side by side below chart */}
+              {(birthdays.length > 0 || absentees.length > 0) && (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 14 }}>
                   {birthdays.length > 0 && (
                     <div style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderRadius: 16, padding: 20, border: "1px solid rgba(255,255,255,0.95)", boxShadow: "0 2px 12px rgba(26,39,68,0.07)" }}>
                       <h3 style={{ margin: "0 0 12px", fontSize: 14, fontWeight: 700, color: "#1A2744", display: "flex", alignItems: "center", gap: 8 }}>
@@ -2631,7 +2631,7 @@ export default function App() {
                     </div>
                   )}
                 </div>
-              </div>
+              )}
             </div>
           )}
 
@@ -2840,7 +2840,7 @@ export default function App() {
                   { label: "Total Registered", value: total, icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z", iconBg: "#1A2744", iconColor: "#fff" },
                   { label: "Nursery (0–5)", value: nurseryCount, icon: "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z", iconBg: "#7C3AED", iconColor: "#fff" },
                   { label: "Juniors (6–11)", value: juniorsCount, icon: "M13 10V3L4 14h7v7l9-11h-7z", iconBg: "#059669", iconColor: "#fff" },
-                  { label: "Visitors", value: visitorsCount, icon: "M15 9a2 2 0 10-4 0v5a2 2 0 01-2 2h6m-6-4h4m8 0a9 9 0 11-18 0 9 9 0 0118 0z", iconBg: "#F59E0B", iconColor: "#fff" },
+                  { label: "Visitors", value: visitorsCount, icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z", iconBg: "#F59E0B", iconColor: "#fff" },
                 ];
                 return (
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8, marginBottom: 16 }} className="children-stats">
