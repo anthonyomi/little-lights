@@ -1794,7 +1794,7 @@ function AdminPanel({ currentUser, children = [], attendance = {}, sessionKey = 
   };
 
   const inp = { width: "100%", border: `1.5px solid ${T.slate200}`, borderRadius: 8, padding: "9px 12px", fontSize: 14, fontFamily: FONT, background: T.white, color: T.slate800, outline: "none", boxSizing: "border-box", marginBottom: 10 };
-  const lbl = { display: "block", fontSize: 12, fontWeight: 500, color: T.slate500, marginBottom: 5, textTransform: "uppercase", letterSpacing: ".06em" };
+  const lbl = { display: "block", fontSize: 13, fontWeight: 600, color: T.slate600, marginBottom: 5 };
 
   return (
     <div style={{ fontFamily: FONT }}>
