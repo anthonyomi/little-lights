@@ -400,7 +400,7 @@ function Input({ label, value, onChange, type = "text", placeholder, readOnly, s
   const inpStyle = { width: "100%", border: `1.5px solid ${T.slate200}`, borderRadius: 8, padding: "9px 12px", fontSize: 14, fontFamily: FONT, background: readOnly ? T.slate50 : T.white, color: T.slate800, outline: "none", boxSizing: "border-box", ...sx };
   return (
     <div style={{ marginBottom: 14 }}>
-      {label && <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: T.slate500, marginBottom: 5, textTransform: "uppercase", letterSpacing: ".06em" }}>{label}</label>}
+      {label && <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: T.slate500, marginBottom: 5 }}>{label}</label>}
       <input type={type} value={value || ""} onChange={onChange} placeholder={placeholder} readOnly={readOnly} style={inpStyle} />
     </div>
   );
@@ -409,7 +409,7 @@ function Input({ label, value, onChange, type = "text", placeholder, readOnly, s
 function Select({ label, value, onChange, children, style: sx = {} }) {
   return (
     <div style={{ marginBottom: 14 }}>
-      {label && <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: T.slate500, marginBottom: 5, textTransform: "uppercase", letterSpacing: ".06em" }}>{label}</label>}
+      {label && <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: T.slate500, marginBottom: 5 }}>{label}</label>}
       <select value={value} onChange={onChange} style={{ width: "100%", border: `1.5px solid ${T.slate200}`, borderRadius: 8, padding: "9px 12px", fontSize: 14, fontFamily: FONT, background: T.white, color: T.slate800, outline: "none", boxSizing: "border-box", ...sx }}>
         {children}
       </select>
@@ -420,7 +420,7 @@ function Select({ label, value, onChange, children, style: sx = {} }) {
 function Textarea({ label, value, onChange, rows = 3 }) {
   return (
     <div style={{ marginBottom: 14 }}>
-      {label && <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: T.slate500, marginBottom: 5, textTransform: "uppercase", letterSpacing: ".06em" }}>{label}</label>}
+      {label && <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: T.slate500, marginBottom: 5 }}>{label}</label>}
       <textarea value={value || ""} onChange={onChange} rows={rows} style={{ width: "100%", border: `1.5px solid ${T.slate200}`, borderRadius: 8, padding: "9px 12px", fontSize: 14, fontFamily: FONT, background: T.white, color: T.slate800, outline: "none", resize: "none", boxSizing: "border-box" }} />
     </div>
   );
@@ -456,7 +456,7 @@ function DatePicker({ label, value, onChange, dobMode = false, hasError = false,
 
   return (
     <div style={{ marginBottom: 0 }}>
-      {label && <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: T.slate500, marginBottom: 5, textTransform: "uppercase", letterSpacing: ".06em" }}>{label}</label>}
+      {label && <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: T.slate500, marginBottom: 5 }}>{label}</label>}
       <div style={{ display: "grid", gridTemplateColumns: "80px minmax(100px, 1fr) 90px", gap: 6 }}>
         <select style={s} value={d} onChange={e => handleD(e.target.value)}>
           <option value="">DD</option>
@@ -560,7 +560,7 @@ function ChildForm({ initial, onSave, onClose, allChildren }) {
   const selectedSiblings = otherChildren.filter(c => (form.siblings || []).includes(c.id));
 
   const lbl = (text, required) => (
-    <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: T.slate500, marginBottom: 5, textTransform: "uppercase", letterSpacing: ".06em" }}>
+    <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: T.slate500, marginBottom: 5 }}>
       {text}{required && <span style={{ color: T.red, marginLeft: 2 }}>*</span>}
     </label>
   );
@@ -616,7 +616,7 @@ function ChildForm({ initial, onSave, onClose, allChildren }) {
           {formErrors.dob && <p style={errStyle}>{formErrors.dob}</p>}
         </div>
         <div style={{ flex: "0 0 90px", marginBottom: 14 }}>
-          <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: T.slate500, marginBottom: 5, textTransform: "uppercase", letterSpacing: ".06em" }}>Age</label>
+          <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: T.slate500, marginBottom: 5 }}>Age</label>
           <input readOnly value={form.age !== "" ? `${form.age} yrs` : "—"} style={{ width: "100%", border: `1.5px solid ${T.slate200}`, borderRadius: 8, padding: "9px 12px", fontSize: 14, fontFamily: FONT, background: T.slate50, color: T.teal, fontWeight: 500, outline: "none", boxSizing: "border-box" }} />
         </div>
       </div>
@@ -639,7 +639,7 @@ function ChildForm({ initial, onSave, onClose, allChildren }) {
 
       {/* Medical */}
       <div style={{ background: "#FFFBEB", border: `1.5px solid #FDE68A`, borderRadius: 10, padding: "12px 14px", marginBottom: 14 }}>
-        <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: "#92400E", marginBottom: 6, textTransform: "uppercase", letterSpacing: ".06em" }}>Medical / Allergy Information</label>
+        <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: "#92400E", marginBottom: 6 }}>Medical / Allergy Information</label>
         <textarea value={form.medical || ""} onChange={e => set("medical", e.target.value)} rows={2} style={{ width: "100%", border: "none", background: "transparent", fontSize: 14, resize: "none", outline: "none", fontFamily: FONT, boxSizing: "border-box", color: "#78350F" }} />
       </div>
 
@@ -662,12 +662,12 @@ function ChildForm({ initial, onSave, onClose, allChildren }) {
       {/* Parent 2 row — optional */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "0 16px" }}>
         <div style={{ marginBottom: 14 }}>
-          <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: T.slate500, marginBottom: 5, textTransform: "uppercase", letterSpacing: ".06em" }}>Parent / Guardian 2 <span style={{ color: T.slate300, fontWeight: 400 }}>(optional)</span></label>
+          <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: T.slate500, marginBottom: 5 }}>Parent / Guardian 2 <span style={{ color: T.slate300, fontWeight: 400 }}>(optional)</span></label>
           <input value={form.parent2 || ""} onChange={e => set("parent2", e.target.value)} placeholder="Full name"
             style={{ width: "100%", border: `1.5px solid ${T.slate200}`, borderRadius: 8, padding: "9px 12px", fontSize: 14, fontFamily: FONT, background: T.white, outline: "none", boxSizing: "border-box" }} />
         </div>
         <div style={{ marginBottom: 14 }}>
-          <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: T.slate500, marginBottom: 5, textTransform: "uppercase", letterSpacing: ".06em" }}>Phone 2 <span style={{ color: T.slate300, fontWeight: 400 }}>(optional)</span></label>
+          <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: T.slate500, marginBottom: 5 }}>Phone 2 <span style={{ color: T.slate300, fontWeight: 400 }}>(optional)</span></label>
           <input type="tel" value={form.parent2phone || ""} onChange={e => set("parent2phone", e.target.value)} placeholder="07700 900000"
             style={{ width: "100%", border: `1.5px solid ${T.slate200}`, borderRadius: 8, padding: "9px 12px", fontSize: 14, fontFamily: FONT, background: T.white, outline: "none", boxSizing: "border-box" }} />
         </div>
@@ -675,16 +675,16 @@ function ChildForm({ initial, onSave, onClose, allChildren }) {
 
       {/* Approved collectors — optional */}
       <div style={{ background: "#F0FDF4", border: `1.5px solid #BBF7D0`, borderRadius: 10, padding: "12px 14px", marginBottom: 14 }}>
-        <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: "#166534", marginBottom: 2, textTransform: "uppercase", letterSpacing: ".06em" }}>Approved Collectors <span style={{ color: "#86EFAC", fontWeight: 400 }}>(optional)</span></label>
+        <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: "#166534", marginBottom: 2 }}>Approved Collectors <span style={{ color: "#86EFAC", fontWeight: 400 }}>(optional)</span></label>
         <p style={{ margin: "0 0 10px", fontSize: 12, color: "#15803D" }}>People authorised to collect this child other than the parents.</p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "0 16px" }}>
           <div style={{ marginBottom: 10 }}>
-            <label style={{ display: "block", fontSize: 11, fontWeight: 500, color: "#166534", marginBottom: 4, textTransform: "uppercase", letterSpacing: ".06em" }}>Collector 1</label>
+            <label style={{ display: "block", fontSize: 11, fontWeight: 500, color: "#166534", marginBottom: 4 }}>Collector 1</label>
             <input value={form.collector1 || ""} onChange={e => set("collector1", e.target.value)} placeholder="Full name"
               style={{ width: "100%", border: `1.5px solid #BBF7D0`, borderRadius: 8, padding: "9px 12px", fontSize: 14, fontFamily: FONT, background: T.white, outline: "none", boxSizing: "border-box" }} />
           </div>
           <div style={{ marginBottom: 10 }}>
-            <label style={{ display: "block", fontSize: 11, fontWeight: 500, color: "#166534", marginBottom: 4, textTransform: "uppercase", letterSpacing: ".06em" }}>Collector 2</label>
+            <label style={{ display: "block", fontSize: 11, fontWeight: 500, color: "#166534", marginBottom: 4 }}>Collector 2</label>
             <input value={form.collector2 || ""} onChange={e => set("collector2", e.target.value)} placeholder="Full name"
               style={{ width: "100%", border: `1.5px solid #BBF7D0`, borderRadius: 8, padding: "9px 12px", fontSize: 14, fontFamily: FONT, background: T.white, outline: "none", boxSizing: "border-box" }} />
           </div>
@@ -693,7 +693,7 @@ function ChildForm({ initial, onSave, onClose, allChildren }) {
 
       {/* Teacher notes — optional */}
       <div style={{ marginBottom: 14 }}>
-        <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: T.slate500, marginBottom: 5, textTransform: "uppercase", letterSpacing: ".06em" }}>Teacher Notes <span style={{ color: T.slate300, fontWeight: 400 }}>(optional)</span></label>
+        <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: T.slate500, marginBottom: 5 }}>Teacher Notes <span style={{ color: T.slate300, fontWeight: 400 }}>(optional)</span></label>
         <textarea value={form.notes || ""} onChange={e => set("notes", e.target.value)} rows={2}
           style={{ width: "100%", border: `1.5px solid ${T.slate200}`, borderRadius: 8, padding: "9px 12px", fontSize: 14, fontFamily: FONT, background: T.white, resize: "none", outline: "none", boxSizing: "border-box" }} />
       </div>
@@ -701,7 +701,7 @@ function ChildForm({ initial, onSave, onClose, allChildren }) {
       {/* Siblings — searchable */}
       {otherChildren.length > 0 && (
         <div style={{ marginBottom: 20 }}>
-          <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: T.slate500, marginBottom: 8, textTransform: "uppercase", letterSpacing: ".06em" }}>
+          <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: T.slate500, marginBottom: 8 }}>
             Siblings <span style={{ color: T.slate300, fontWeight: 400 }}>(optional)</span>
           </label>
 
@@ -816,7 +816,7 @@ function QRDisplay({ child, allChildren, onClose }) {
     <div style={{ fontFamily: FONT, textAlign: "center" }}>
       {/* Family header */}
       <div style={{ background: T.slate50, borderRadius: 12, padding: "14px 16px", marginBottom: 20, border: `1px solid ${T.slate200}` }}>
-        <p style={{ margin: "0 0 10px", fontSize: 12, fontWeight: 600, color: T.slate500, textTransform: "uppercase", letterSpacing: ".06em" }}>
+        <p style={{ margin: "0 0 10px", fontSize: 12, fontWeight: 600, color: T.slate500 }}>
           {isFamily ? "Family QR Code" : "Child QR Code"}
         </p>
         <div style={{ display: "flex", justifyContent: "center", gap: 8, flexWrap: "wrap" }}>
@@ -1188,7 +1188,7 @@ function ChildDetail({ child, onClose, onEdit, onDelete, allChildren, attendance
           <div style={{ display: "flex", gap: 10, background: "#FFFBEB", borderTop: `1.5px solid #FDE68A`, padding: "10px 20px", alignItems: "flex-start" }}>
             <Icon name="alert" size={16} color="#D97706" />
             <div>
-              <div style={{ fontSize: 11, fontWeight: 600, color: "#92400E", textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 1 }}>Medical Alert</div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: "#92400E", marginBottom: 1 }}>Medical Alert</div>
               <p style={{ margin: 0, color: "#78350F", fontSize: 13 }}>{child.medical}</p>
             </div>
           </div>
@@ -1200,17 +1200,17 @@ function ChildDetail({ child, onClose, onEdit, onDelete, allChildren, attendance
       {/* Info grid — DOB + Parent 1 + Parent 2 on one row */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 10, marginBottom: 16 }}>
         <div style={{ background: T.slate50, borderRadius: 8, padding: "10px 12px", border: `1px solid ${T.slate200}` }}>
-          <div style={{ fontSize: 11, fontWeight: 500, color: T.slate400, textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 2 }}>Date of Birth</div>
+          <div style={{ fontSize: 11, fontWeight: 500, color: T.slate400, marginBottom: 2 }}>Date of Birth</div>
           <div style={{ fontSize: 14, color: T.slate800, fontWeight: 500 }}>{formatStoredDate(child.dob)}</div>
         </div>
         <div style={{ background: T.slate50, borderRadius: 8, padding: "10px 12px", border: `1px solid ${T.slate200}` }}>
-          <div style={{ fontSize: 11, fontWeight: 500, color: T.slate400, textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 4 }}>Parent / Guardian 1</div>
+          <div style={{ fontSize: 11, fontWeight: 500, color: T.slate400, marginBottom: 4 }}>Parent / Guardian 1</div>
           <div style={{ fontSize: 14, color: T.slate800, fontWeight: 600, marginBottom: 3 }}>{child.parent1 || "—"}</div>
           {child.parent1phone && <div style={{ fontSize: 13, color: T.teal, fontWeight: 500 }}>{child.parent1phone}</div>}
         </div>
         {(child.parent2 || child.parent2phone) && (
           <div style={{ background: T.slate50, borderRadius: 8, padding: "10px 12px", border: `1px solid ${T.slate200}` }}>
-            <div style={{ fontSize: 11, fontWeight: 500, color: T.slate400, textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 4 }}>Parent / Guardian 2</div>
+            <div style={{ fontSize: 11, fontWeight: 500, color: T.slate400, marginBottom: 4 }}>Parent / Guardian 2</div>
             <div style={{ fontSize: 14, color: T.slate800, fontWeight: 600, marginBottom: 3 }}>{child.parent2 || "—"}</div>
             {child.parent2phone && <div style={{ fontSize: 13, color: T.teal, fontWeight: 500 }}>{child.parent2phone}</div>}
           </div>
@@ -1220,7 +1220,7 @@ function ChildDetail({ child, onClose, onEdit, onDelete, allChildren, attendance
       {/* Siblings */}
       {siblings.length > 0 && (
         <div style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 12, fontWeight: 500, color: T.slate500, textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 8 }}>Siblings</div>
+          <div style={{ fontSize: 12, fontWeight: 500, color: T.slate500, marginBottom: 8 }}>Siblings</div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {siblings.map(s => (
               <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 12px", borderRadius: 8, background: T.tealLight, border: `1px solid ${T.teal}20` }}>
@@ -1235,7 +1235,7 @@ function ChildDetail({ child, onClose, onEdit, onDelete, allChildren, attendance
       {/* Approved Collectors */}
       {(child.collector1 || child.collector2) && (
         <div style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 12, fontWeight: 500, color: T.slate500, textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 8 }}>Approved Collectors</div>
+          <div style={{ fontSize: 12, fontWeight: 500, color: T.slate500, marginBottom: 8 }}>Approved Collectors</div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {[child.collector1, child.collector2].filter(Boolean).map((name, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 12px", borderRadius: 8, background: "#F0FDF4", border: "1px solid #BBF7D0" }}>
@@ -1252,7 +1252,7 @@ function ChildDetail({ child, onClose, onEdit, onDelete, allChildren, attendance
       {/* Notes */}
       {child.notes && (
         <div style={{ background: T.slate50, border: "1px solid #E2E8F0", borderRadius: 10, padding: "12px 14px", marginBottom: 20 }}>
-          <div style={{ fontSize: 12, fontWeight: 500, color: T.slate500, textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 4 }}>Notes</div>
+          <div style={{ fontSize: 12, fontWeight: 500, color: T.slate500, marginBottom: 4 }}>Notes</div>
           <p style={{ margin: 0, color: T.slate700, fontSize: 14 }}>{child.notes}</p>
         </div>
       )}
@@ -1466,7 +1466,7 @@ function SuperAdminPortal({ currentUser }) {
             <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: "#1A2744" }}>Super Admin Hub</h2>
             <p style={{ margin: 0, fontSize: 12, color: T.slate500 }}>Anthony Omisade · All organisations</p>
           </div>
-          <div style={{ marginLeft: "auto", background: "rgba(124,58,237,0.1)", borderRadius: 8, padding: "5px 12px", fontSize: 11, fontWeight: 700, color: PURPLE, textTransform: "uppercase", letterSpacing: ".06em" }}>
+          <div style={{ marginLeft: "auto", background: "rgba(124,58,237,0.1)", borderRadius: 8, padding: "5px 12px", fontSize: 11, fontWeight: 700, color: PURPLE }}>
             ★ Super Admin
           </div>
         </div>
@@ -1513,7 +1513,7 @@ function SuperAdminPortal({ currentUser }) {
                 </div>
                 <div>
                   <div style={{ fontSize: 24, fontWeight: 800, color: s.accent, lineHeight: 1, marginBottom: 2 }}>{s.value}</div>
-                  <div style={{ fontSize: 10, fontWeight: 600, color: T.slate500, textTransform: "uppercase", letterSpacing: ".06em" }}>{s.label}</div>
+                  <div style={{ fontSize: 10, fontWeight: 600, color: T.slate500 }}>{s.label}</div>
                 </div>
               </div>
             ))}
@@ -1537,15 +1537,15 @@ function SuperAdminPortal({ currentUser }) {
                   <div style={{ display: "flex", gap: 16, flexShrink: 0 }}>
                     <div style={{ textAlign: "center" }}>
                       <div style={{ fontSize: 16, fontWeight: 800, color: T.teal }}>{o.children.length}</div>
-                      <div style={{ fontSize: 9, color: T.slate400, textTransform: "uppercase", letterSpacing: ".04em" }}>children</div>
+                      <div style={{ fontSize: 9, color: T.slate400 }}>children</div>
                     </div>
                     <div style={{ textAlign: "center" }}>
                       <div style={{ fontSize: 16, fontWeight: 800, color: "#D97706" }}>{o.teachers.length}</div>
-                      <div style={{ fontSize: 9, color: T.slate400, textTransform: "uppercase", letterSpacing: ".04em" }}>teachers</div>
+                      <div style={{ fontSize: 9, color: T.slate400 }}>teachers</div>
                     </div>
                     <div style={{ textAlign: "center" }}>
                       <div style={{ fontSize: 16, fontWeight: 800, color: "#059669" }}>{o.sessionCount}</div>
-                      <div style={{ fontSize: 9, color: T.slate400, textTransform: "uppercase", letterSpacing: ".04em" }}>sessions</div>
+                      <div style={{ fontSize: 9, color: T.slate400 }}>sessions</div>
                     </div>
                   </div>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, color: T.slate300 }}><path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -1583,7 +1583,7 @@ function SuperAdminPortal({ currentUser }) {
                     ].map(s => (
                       <div key={s.label} style={{ background: "rgba(255,255,255,0.5)", borderRadius: 8, padding: "8px 10px", textAlign: "center" }}>
                         <div style={{ fontSize: 20, fontWeight: 800, color: s.color }}>{s.value}</div>
-                        <div style={{ fontSize: 10, color: T.slate400, textTransform: "uppercase", letterSpacing: ".04em" }}>{s.label}</div>
+                        <div style={{ fontSize: 10, color: T.slate400 }}>{s.label}</div>
                       </div>
                     ))}
                   </div>
@@ -1625,7 +1625,7 @@ function SuperAdminPortal({ currentUser }) {
                     ].map(s => (
                       <div key={s.label} style={{ ...glassCard, padding: "10px 12px", background: s.bg, textAlign: "center" }}>
                         <div style={{ fontSize: 22, fontWeight: 800, color: s.accent }}>{s.value}</div>
-                        <div style={{ fontSize: 10, color: T.slate500, textTransform: "uppercase", letterSpacing: ".05em" }}>{s.label}</div>
+                        <div style={{ fontSize: 10, color: T.slate500 }}>{s.label}</div>
                       </div>
                     ))}
                   </div>
@@ -1660,7 +1660,7 @@ function SuperAdminPortal({ currentUser }) {
                             <div style={{ fontSize: 12, fontWeight: 600, color: "#1A2744" }}>{t.name}</div>
                             <div style={{ fontSize: 11, color: T.slate400 }}>{t.email}</div>
                           </div>
-                          {t.email === ADMIN_EMAIL && <span style={{ background: "rgba(124,58,237,0.1)", color: PURPLE, fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 20, textTransform: "uppercase" }}>Owner</span>}
+                          {t.email === ADMIN_EMAIL && <span style={{ background: "rgba(124,58,237,0.1)", color: PURPLE, fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 20 }}>Owner</span>}
                         </div>
                       ))}
                     </div>
@@ -1681,7 +1681,7 @@ function SuperAdminPortal({ currentUser }) {
                               <div style={{ fontSize: 12, fontWeight: 600, color: "#1A2744" }}>{c.name}</div>
                               {c.dob && <div style={{ fontSize: 10, color: T.slate400 }}>DOB: {c.dob}</div>}
                             </div>
-                            {gl && <span style={{ background: gb, color: gc, fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 20, textTransform: "uppercase" }}>{gl}</span>}
+                            {gl && <span style={{ background: gb, color: gc, fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 20 }}>{gl}</span>}
                           </div>
                         );
                       })}
@@ -1928,12 +1928,12 @@ function LoginScreen() {
           <h2 style={{ margin: "0 0 4px", fontSize: 20, fontWeight: 600, color: T.slate900 }}>Welcome back</h2>
           <p style={{ margin: "0 0 24px", fontSize: 14, color: T.slate400 }}>Sign in to your teacher account</p>
           <div style={{ marginBottom: 14 }}>
-            <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: T.slate500, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".06em" }}>Email Address</label>
+            <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: T.slate500, marginBottom: 6 }}>Email Address</label>
             <input type="email" value={email} onChange={e => { setEmail(e.target.value); setError(""); }} onKeyDown={e => e.key === "Enter" && handleLogin()} placeholder="you@email.com"
               style={{ width: "100%", border: `1.5px solid ${T.slate200}`, borderRadius: 8, padding: "11px 14px", fontSize: 15, fontFamily: FONT, outline: "none", boxSizing: "border-box" }} />
           </div>
           <div style={{ marginBottom: 24 }}>
-            <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: T.slate500, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".06em" }}>Password</label>
+            <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: T.slate500, marginBottom: 6 }}>Password</label>
             <input type="password" value={password} onChange={e => { setPassword(e.target.value); setError(""); }} onKeyDown={e => e.key === "Enter" && handleLogin()} placeholder="••••••••"
               style={{ width: "100%", border: `1.5px solid ${T.slate200}`, borderRadius: 8, padding: "11px 14px", fontSize: 15, fontFamily: FONT, outline: "none", boxSizing: "border-box" }} />
           </div>
@@ -2156,7 +2156,7 @@ function CollectorModal({ child, onConfirm, onClose }) {
 
       {options.length > 0 && (
         <div style={{ marginBottom: 16 }}>
-          <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: T.slate500, marginBottom: 8, textTransform: "uppercase", letterSpacing: ".06em" }}>Select collector</label>
+          <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: T.slate500, marginBottom: 8 }}>Select collector</label>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {options.map(name => (
               <button key={name} onClick={() => setSelected(name)}
@@ -2187,7 +2187,7 @@ function CollectorModal({ child, onConfirm, onClose }) {
               Please confirm this person is approved to collect this child before proceeding.
             </p>
           </div>
-          <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: T.slate500, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".06em" }}>
+          <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: T.slate500, marginBottom: 6 }}>
             {options.length === 0 ? "Collector name" : "Enter name"}
           </label>
           <input value={manualName} onChange={e => setManualName(e.target.value)}
@@ -2587,7 +2587,7 @@ export default function App() {
                 return (<>
                   {/* Section 1: Today's attendance */}
                   <div style={{ marginBottom: 16 }}>
-                    <p style={{ fontSize: 11, fontWeight: 700, color: T.slate500, textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 10 }}>Today's Attendance</p>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: T.slate500, marginBottom: 10 }}>Today's Attendance</p>
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: 10, marginBottom: 16 }}>
                       {[
                         { label: "Present Now", value: checkedInNow, accent: T.teal, accentBg: "rgba(2,132,199,0.09)" },
@@ -2597,7 +2597,7 @@ export default function App() {
                       ].map(s => (
                         <div key={s.label} style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderRadius: 14, padding: "14px 16px", border: "1px solid rgba(255,255,255,0.95)", boxShadow: "0 2px 10px rgba(26,39,68,0.07)" }}>
                           <div style={{ fontSize: 30, fontWeight: 800, color: s.accent, lineHeight: 1, marginBottom: 4 }}>{s.value}</div>
-                          <div style={{ fontSize: 11, fontWeight: 600, color: T.slate500, textTransform: "uppercase", letterSpacing: ".05em" }}>{s.label}</div>
+                          <div style={{ fontSize: 11, fontWeight: 600, color: T.slate500 }}>{s.label}</div>
                         </div>
                       ))}
                     </div>
@@ -2605,7 +2605,7 @@ export default function App() {
 
                   {/* Section 2: Registered children */}
                   <div style={{ marginBottom: 16 }}>
-                    <p style={{ fontSize: 11, fontWeight: 700, color: T.slate500, textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 10 }}>Registered Children</p>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: T.slate500, marginBottom: 10 }}>Registered Children</p>
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 10, marginBottom: 16 }}>
                       {[
                         { label: "Total", value: children.length, accent: T.slate700 },
@@ -2616,7 +2616,7 @@ export default function App() {
                       ].map(s => (
                         <div key={s.label} style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderRadius: 14, padding: "14px 16px", border: "1px solid rgba(255,255,255,0.95)", boxShadow: "0 2px 10px rgba(26,39,68,0.07)" }}>
                           <div style={{ fontSize: 30, fontWeight: 800, color: s.accent, lineHeight: 1, marginBottom: 4 }}>{s.value}</div>
-                          <div style={{ fontSize: 11, fontWeight: 600, color: T.slate500, textTransform: "uppercase", letterSpacing: ".05em" }}>{s.label}</div>
+                          <div style={{ fontSize: 11, fontWeight: 600, color: T.slate500 }}>{s.label}</div>
                         </div>
                       ))}
                     </div>
@@ -2723,7 +2723,7 @@ export default function App() {
                         </div>
                         <div>
                           <div style={{ fontSize: 22, fontWeight: 800, color: "#1A2744", lineHeight: 1, marginBottom: 2 }}>{s.value}</div>
-                          <div style={{ fontSize: 10, fontWeight: 600, color: T.slate500, textTransform: "uppercase", letterSpacing: ".06em", lineHeight: 1.2 }}>{s.label}</div>
+                          <div style={{ fontSize: 10, fontWeight: 600, color: T.slate500, lineHeight: 1.2 }}>{s.label}</div>
                         </div>
                       </div>
                     ))}
@@ -2762,7 +2762,7 @@ export default function App() {
                     {/* Section header */}
                     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
                       <div style={{ width: 8, height: 8, borderRadius: "50%", background: groupAccent, flexShrink: 0 }} />
-                      <h3 style={{ margin: 0, fontSize: 12, fontWeight: 700, color: T.slate500, textTransform: "uppercase", letterSpacing: ".08em" }}>
+                      <h3 style={{ margin: 0, fontSize: 12, fontWeight: 700, color: T.slate500 }}>
                         {groupName === "Nursery" ? "Nursery (0–5)" : "Juniors (6–11)"}
                       </h3>
                       <div style={{ flex: 1, height: 1, background: T.slate200 }} />
@@ -2851,7 +2851,7 @@ export default function App() {
               {filtered.filter(c => !getAgeGroup(liveAge(c))).length > 0 && (
                 <div style={{ marginBottom: 28 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                    <h3 style={{ margin: 0, fontSize: 12, fontWeight: 700, color: T.slate400, textTransform: "uppercase", letterSpacing: ".08em" }}>No Age Group</h3>
+                    <h3 style={{ margin: 0, fontSize: 12, fontWeight: 700, color: T.slate400 }}>No Age Group</h3>
                     <div style={{ flex: 1, height: 1, background: T.slate200 }} />
                   </div>
                   {filtered.filter(c => !getAgeGroup(liveAge(c))).map(child => {
@@ -2902,7 +2902,7 @@ export default function App() {
                         </div>
                         <div>
                           <div style={{ fontSize: 22, fontWeight: 800, color: T.sidebar, lineHeight: 1, marginBottom: 2 }}>{s.value}</div>
-                          <div style={{ fontSize: 10, fontWeight: 600, color: T.slate400, textTransform: "uppercase", letterSpacing: "0.05em", lineHeight: 1.2 }}>{s.label}</div>
+                          <div style={{ fontSize: 10, fontWeight: 600, color: T.slate400, lineHeight: 1.2 }}>{s.label}</div>
                         </div>
                       </div>
                     ))}
@@ -3114,7 +3114,7 @@ export default function App() {
                       <div style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid rgba(255,255,255,0.95)", borderRadius: 18, overflow: "hidden", boxShadow: "0 2px 16px rgba(26,39,68,0.08)" }}>
                         <div style={{ padding: "16px 20px", borderBottom: "1px solid rgba(26,39,68,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                           <div>
-                            <div style={{ fontSize: 11, fontWeight: 600, color: T.slate400, textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 2 }}>SUN</div>
+                            <div style={{ fontSize: 11, fontWeight: 600, color: T.slate400, marginBottom: 2 }}>Sun</div>
                             <div style={{ fontSize: 22, fontWeight: 800, color: "#1A2744", lineHeight: 1 }}>
                               {new Date(selectedKey).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                             </div>
@@ -3140,7 +3140,7 @@ export default function App() {
                                     {rec.out && <><span style={{ color: T.slate300 }}> · </span><span style={{ color: "#DC2626", fontWeight: 600 }}>Out {rec.out?.split("·")[1]?.trim() || rec.out}</span></>}
                                   </div>
                                 </div>
-                                {grp && <span style={{ fontSize: 10, fontWeight: 700, background: `${accentCol}15`, color: accentCol, borderRadius: 20, padding: "3px 8px", textTransform: "uppercase", letterSpacing: ".04em", flexShrink: 0 }}>{grp.label}</span>}
+                                {grp && <span style={{ fontSize: 10, fontWeight: 700, background: `${accentCol}15`, color: accentCol, borderRadius: 20, padding: "3px 8px", flexShrink: 0 }}>{grp.label}</span>}
                               </div>
                             );
                           })}
@@ -3170,7 +3170,7 @@ export default function App() {
                                 style={{ display: "flex", alignItems: "center", gap: 16, padding: "16px 20px", borderBottom: i < allSundaysWithData.length - 1 ? "1px solid rgba(26,39,68,0.06)" : "none", cursor: "pointer", background: calOpen === key ? "rgba(2,132,199,0.05)" : "transparent", transition: "background .15s" }}>
                                 {/* Date block */}
                                 <div style={{ textAlign: "center", minWidth: 44, flexShrink: 0 }}>
-                                  <div style={{ fontSize: 10, fontWeight: 700, color: T.teal, textTransform: "uppercase", letterSpacing: ".08em" }}>SUN</div>
+                                  <div style={{ fontSize: 10, fontWeight: 700, color: T.teal }}>Sun</div>
                                   <div style={{ fontSize: 26, fontWeight: 800, color: "#1A2744", lineHeight: 1 }}>{d.getDate()}</div>
                                   <div style={{ fontSize: 11, color: T.slate400 }}>{d.toLocaleDateString("en-GB", { month: "short", year: "numeric" })}</div>
                                 </div>
@@ -3179,19 +3179,19 @@ export default function App() {
                                   {nurseryCount > 0 && (
                                     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", background: "rgba(124,58,237,0.08)", borderRadius: 10, padding: "6px 12px", minWidth: 60 }}>
                                       <span style={{ fontSize: 20, fontWeight: 800, color: "#7C3AED", lineHeight: 1 }}>{nurseryCount}</span>
-                                      <span style={{ fontSize: 10, fontWeight: 600, color: "#7C3AED", textTransform: "uppercase", letterSpacing: ".06em", marginTop: 2 }}>Nursery</span>
+                                      <span style={{ fontSize: 10, fontWeight: 600, color: "#7C3AED", marginTop: 2 }}>Nursery</span>
                                     </div>
                                   )}
                                   {juniorsCount > 0 && (
                                     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", background: "rgba(5,150,105,0.08)", borderRadius: 10, padding: "6px 12px", minWidth: 60 }}>
                                       <span style={{ fontSize: 20, fontWeight: 800, color: "#059669", lineHeight: 1 }}>{juniorsCount}</span>
-                                      <span style={{ fontSize: 10, fontWeight: 600, color: "#059669", textTransform: "uppercase", letterSpacing: ".06em", marginTop: 2 }}>Juniors</span>
+                                      <span style={{ fontSize: 10, fontWeight: 600, color: "#059669", marginTop: 2 }}>Juniors</span>
                                     </div>
                                   )}
                                   {visitorsCount > 0 && (
                                     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", background: "rgba(217,119,6,0.08)", borderRadius: 10, padding: "6px 12px", minWidth: 60 }}>
                                       <span style={{ fontSize: 20, fontWeight: 800, color: "#D97706", lineHeight: 1 }}>{visitorsCount}</span>
-                                      <span style={{ fontSize: 10, fontWeight: 600, color: "#D97706", textTransform: "uppercase", letterSpacing: ".06em", marginTop: 2 }}>Visitors</span>
+                                      <span style={{ fontSize: 10, fontWeight: 600, color: "#D97706", marginTop: 2 }}>Visitors</span>
                                     </div>
                                   )}
                                 </div>
