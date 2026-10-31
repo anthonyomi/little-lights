@@ -2219,7 +2219,7 @@ function Sidebar({ tab, setTab, teacherName, onSignOut, isAdmin, mobile, onClose
   ];
 
   return (
-    <div style={{ width: mobile ? "100%" : 240, background: "linear-gradient(180deg, #1A2744 0%, #1E2F52 40%, #162240 80%, #111B35 100%)", display: "flex", flexDirection: "column", height: mobile ? "auto" : "calc(100vh - env(safe-area-inset-top, 0px))", minHeight: mobile ? "100%" : undefined, flexShrink: 0, position: mobile ? "relative" : "fixed", left: 0, top: mobile ? 0 : "env(safe-area-inset-top, 0px)", bottom: 0, zIndex: 200, overflow: "hidden" }}>
+    <div style={{ width: mobile ? "100%" : 240, background: "linear-gradient(180deg, #1A2744 0%, #1E2F52 40%, #162240 80%, #111B35 100%)", display: "flex", flexDirection: "column", height: mobile ? "auto" : undefined, minHeight: mobile ? "100%" : undefined, flexShrink: 0, position: mobile ? "relative" : "fixed", left: 0, top: mobile ? 0 : "env(safe-area-inset-top, 0px)", bottom: 0, zIndex: 200, overflow: "hidden" }}>
       {/* Logo */}
       <div style={{ padding: "28px 20px 20px", borderBottom: `1px solid ${T.sidebarAccent}` }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
