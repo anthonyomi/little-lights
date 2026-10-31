@@ -480,7 +480,7 @@ function DatePicker({ label, value, onChange, dobMode = false, hasError = false,
 // ─────────────────────────────────────────────────────────────────────────────
 function Modal({ title, onClose, children, wide, subtitle }) {
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,.5)", backdropFilter: "blur(4px)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
+    <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,.5)", backdropFilter: "blur(4px)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: "calc(env(safe-area-inset-top, 0px) + 16px) 16px 16px" }}
       onClick={e => e.target === e.currentTarget && onClose()}>
       <div style={{ background: T.white, borderRadius: 16, width: "100%", maxWidth: wide ? 700 : 500, maxHeight: "92vh", overflowY: "auto", overflowX: "hidden", boxShadow: "0 25px 60px rgba(0,0,0,.2)", animation: "slideUp .2s ease" }}>
         <div style={{ padding: "20px 24px", borderBottom: `1px solid ${T.slate100}`, display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
@@ -1271,7 +1271,7 @@ function ChildDetail({ child, onClose, onEdit, onDelete, allChildren, attendance
         </div>
       </div>
       {showQR && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,.5)", backdropFilter: "blur(4px)", zIndex: 1100, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+        <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,.5)", backdropFilter: "blur(4px)", zIndex: 1100, display: "flex", alignItems: "center", justifyContent: "center", padding: "calc(env(safe-area-inset-top, 0px) + 16px) 16px 16px" }}>
           <div style={{ background: T.white, borderRadius: 20, padding: 28, width: "100%", maxWidth: 380, boxShadow: "0 25px 60px rgba(0,0,0,.25)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
               <h3 style={{ margin: 0, fontSize: 18, fontWeight: 600, color: T.slate900 }}>Family QR Code</h3>
@@ -2219,7 +2219,7 @@ function Sidebar({ tab, setTab, teacherName, onSignOut, isAdmin, mobile, onClose
   ];
 
   return (
-    <div style={{ width: mobile ? "100%" : 240, background: "linear-gradient(180deg, #1A2744 0%, #1E2F52 40%, #162240 80%, #111B35 100%)", display: "flex", flexDirection: "column", height: mobile ? "auto" : "100vh", minHeight: mobile ? "100vh" : undefined, flexShrink: 0, position: mobile ? "relative" : "fixed", left: 0, top: 0, bottom: 0, zIndex: 200, overflow: "hidden" }}>
+    <div style={{ width: mobile ? "100%" : 240, background: "linear-gradient(180deg, #1A2744 0%, #1E2F52 40%, #162240 80%, #111B35 100%)", display: "flex", flexDirection: "column", height: mobile ? "auto" : "calc(100vh - env(safe-area-inset-top, 0px))", minHeight: mobile ? "100%" : undefined, flexShrink: 0, position: mobile ? "relative" : "fixed", left: 0, top: mobile ? 0 : "env(safe-area-inset-top, 0px)", bottom: 0, zIndex: 200, overflow: "hidden" }}>
       {/* Logo */}
       <div style={{ padding: "28px 20px 20px", borderBottom: `1px solid ${T.sidebarAccent}` }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -2482,7 +2482,7 @@ export default function App() {
     .checkin-child-card:hover { box-shadow: 0 6px 20px rgba(26,39,68,0.12) !important; transform: translateY(-1px); }
     @media (max-width: 768px) {
       .sidebar { display: none !important; }
-      .main-content { margin-left: 0 !important; padding-bottom: 80px !important; }
+      .main-content { margin-left: 0 !important; padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important; }
       .mobile-menu { display: flex !important; }
       .mobile-nav { display: flex !important; }
     }
@@ -2509,6 +2509,9 @@ export default function App() {
     <div style={{ display: "flex", minHeight: "100vh", background: `linear-gradient(160deg, #DAEAF6 0%, #C5DDEF 35%, #D6EAF5 65%, #E8F4FB 100%)`, fontFamily: FONT }}>
       <style>{STYLES}</style>
 
+      {/* Status bar band — solid navy behind the iOS status bar when launched from the home screen */}
+      <div aria-hidden="true" style={{ position: "fixed", top: 0, left: 0, right: 0, height: "env(safe-area-inset-top, 0px)", background: "#1A2744", zIndex: 950, pointerEvents: "none" }} />
+
       {/* Sidebar — desktop */}
       <div className="sidebar">
         <Sidebar tab={tab} setTab={t => { setTab(t); setSearch(""); }} teacherName={teacherName} onSignOut={handleSignOut} isAdmin={isAdmin} />
@@ -2516,7 +2519,7 @@ export default function App() {
 
       {/* Mobile sidebar overlay */}
       {mobileSidebar && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 300, display: "flex" }}>
+        <div style={{ position: "fixed", inset: 0, zIndex: 300, display: "flex", paddingTop: "env(safe-area-inset-top, 0px)", background: "#1A2744" }}>
           <div style={{ width: 280, background: "linear-gradient(180deg, #1A2744 0%, #1E2F52 40%, #162240 80%, #111B35 100%)" }}>
             <Sidebar tab={tab} setTab={t => { setTab(t); setSearch(""); }} teacherName={teacherName} onSignOut={handleSignOut} isAdmin={isAdmin} mobile onClose={() => setMobileSidebar(false)} />
           </div>
@@ -2525,9 +2528,9 @@ export default function App() {
       )}
 
       {/* Main content */}
-      <div className="main-content" style={{ flex: 1, marginLeft: 240, minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      <div className="main-content" style={{ flex: 1, marginLeft: 240, minHeight: "100vh", paddingTop: "env(safe-area-inset-top, 0px)", display: "flex", flexDirection: "column" }}>
         {/* Top bar */}
-        <div style={{ background: "rgba(218,234,246,0.85)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", borderBottom: "1px solid rgba(255,255,255,0.6)", flexShrink: 0, position: "sticky", top: 0, zIndex: 100 }}>
+        <div style={{ background: "rgba(218,234,246,0.85)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", borderBottom: "1px solid rgba(255,255,255,0.6)", flexShrink: 0, position: "sticky", top: "env(safe-area-inset-top, 0px)", zIndex: 100 }}>
           <div style={{ height: 60, display: "flex", alignItems: "center", padding: "0 24px", gap: 16 }}>
             <button onClick={() => setMobileSidebar(true)} style={{ display: "none", background: "none", border: "none", cursor: "pointer", color: T.slate600, padding: 4 }} className="mobile-menu">
               <Icon name="menu" size={20} />
